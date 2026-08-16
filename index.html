@@ -275,6 +275,35 @@
   .dl-cta{display:flex;align-items:center;gap:16px;margin-top:22px;flex-wrap:wrap}
   .dl-soon{font-family:var(--mono);font-size:.7rem;color:var(--faint);letter-spacing:.06em}
 
+  /* ---------- example gallery ---------- */
+  #gallery{padding:64px 0 8px}
+  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
+  @media(max-width:1080px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.gallery-grid{grid-template-columns:1fr}}
+  .g-card{display:block;position:relative;border:1px solid var(--line-strong);border-radius:12px;background:linear-gradient(180deg, rgba(134,224,171,.05), rgba(14,19,22,.6) 45%, var(--bg-2));padding:16px;font-family:var(--mono);text-decoration:none;color:var(--text);transition:transform .2s ease,border-color .2s ease}
+  .g-card:hover{transform:translateY(-4px);border-color:var(--green)}
+  .g-card::before,.g-card::after{content:"";position:absolute;width:14px;height:14px}
+  .g-card::before{top:-1px;left:-1px;border-top:2px solid var(--green);border-left:2px solid var(--green);border-top-left-radius:12px}
+  .g-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);border-bottom-right-radius:12px}
+  .g-top{display:flex;justify-content:space-between;align-items:center;font-size:.6rem;letter-spacing:.16em;color:var(--dim);padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .g-body{display:flex;gap:12px;align-items:center;margin-top:12px}
+  .g-radar{width:46px;height:46px;border-radius:50%;border:1px solid rgba(134,224,171,.35);position:relative;flex-shrink:0;background:radial-gradient(circle, rgba(134,224,171,.08) 0 45%, transparent 72%)}
+  .g-radar::after{content:"";position:absolute;inset:13px;border-radius:50%;border:1px solid rgba(134,224,171,.22)}
+  .g-radar i{position:absolute;width:5px;height:5px;background:var(--green);border-radius:50%;top:26%;left:58%;box-shadow:0 0 6px var(--green)}
+  .g-id{min-width:0}
+  .g-id h4{font-size:.82rem;letter-spacing:.03em;line-height:1.25}
+  .g-tag{font-size:.56rem;color:var(--dim);letter-spacing:.1em;margin-top:3px}
+  .g-tag b{color:var(--amber);font-weight:600}
+  .g-stats{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .g-stat{display:flex;align-items:center;gap:8px;font-size:.55rem;letter-spacing:.14em;color:var(--dim)}
+  .g-stat span{width:56px;flex-shrink:0}
+  .g-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+  .g-bar i{display:block;height:100%;background:linear-gradient(90deg, var(--green-dim), var(--green))}
+  .g-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+  .g-chips span{font-size:.56rem;letter-spacing:.08em;color:var(--green);border:1px solid rgba(134,224,171,.3);border-radius:5px;padding:3px 7px}
+  .g-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:9px;border-top:1px solid var(--line);font-size:.58rem;letter-spacing:.12em;color:var(--faint)}
+  .g-foot b{color:var(--green);font-weight:600}
+
   /* reveal on scroll */
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
   .reveal.in{opacity:1;transform:none}
@@ -288,6 +317,7 @@
     <a class="logo" href="#"><span class="mark"></span>lowkeyhud</a>
     <div class="nav-links">
       <a href="#hud">the hud</a>
+      <a href="#gallery">examples</a>
       <a href="#how">how it works</a>
       <a href="#roast">daily roast</a>
       <a href="#download">download</a>
@@ -357,6 +387,74 @@
     <span>FOCUS <b>62%</b></span><span>MEETINGS SURVIVED <b>3</b></span><span>XP <b>420</b></span><span>AURA <b>INTACT</b></span><span>GRID <b>STILL FINE</b></span><span>HUD <b>BETTER</b></span><span>NO CAP <b>·</b></span>
   </div>
 </div>
+
+<section id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">proof of lowkey</div>
+      <h2>Four people. <span class="accent">Four HUDs.</span></h2>
+      <p class="sub">Tap one to open it in the generator, pre-filled. Twenty seconds to make it yours.</p>
+    </div>
+    <div class="gallery-grid">
+      <a class="g-card reveal" href="generator.html#mode=personal&name=STUDIO+GOBLIN&cls=CREATIVE&status=CAFFEINATED&lvl=7&tag=MAKING+IT+UP&s1=78&s2=44&s3=91&chips=CAFFEINE,AUDACITY,SLIGHTLY+OFF+GRID">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 7 · LOWKEY</span></div>
+        <div class="g-body">
+          <div class="g-radar"><i></i></div>
+          <div class="g-id"><h4>STUDIO GOBLIN</h4><div class="g-tag">CLASS: <b>CREATIVE</b> · STATUS: <b>CAFFEINATED</b></div></div>
+        </div>
+        <div class="g-stats">
+          <div class="g-stat"><span>AURA</span><div class="g-bar"><i style="width:78%"></i></div></div>
+          <div class="g-stat"><span>FOCUS</span><div class="g-bar"><i style="width:44%"></i></div></div>
+          <div class="g-stat"><span>RIPPLES</span><div class="g-bar"><i style="width:91%"></i></div></div>
+        </div>
+        <div class="g-chips"><span>CAFFEINE</span><span>AUDACITY</span><span>OFF GRID</span></div>
+        <div class="g-foot"><span>XP: <b>329</b></span><span class="red">MAKING IT UP</span></div>
+      </a>
+      <a class="g-card reveal" href="generator.html#mode=career&name=SHIP+IT+SAM&cls=FOUNDER&status=LOWKEY+BURNING+OUT&lvl=12&tag=SHIPPING&s1=82&s2=70&s3=64&chips=PIVOTING,HUSTLE,3+TABS+TOO+MANY">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 12 · LOWKEY</span></div>
+        <div class="g-body">
+          <div class="g-radar"><i></i></div>
+          <div class="g-id"><h4>SHIP IT SAM</h4><div class="g-tag">ROLE: <b>FOUNDER</b> · STATUS: <b>BURNING OUT</b></div></div>
+        </div>
+        <div class="g-stats">
+          <div class="g-stat"><span>EXP</span><div class="g-bar"><i style="width:82%"></i></div></div>
+          <div class="g-stat"><span>SKILL</span><div class="g-bar"><i style="width:70%"></i></div></div>
+          <div class="g-stat"><span>REPUTATION</span><div class="g-bar"><i style="width:64%"></i></div></div>
+        </div>
+        <div class="g-chips"><span>PIVOTING</span><span>HUSTLE</span><span>3 TABS TOO MANY</span></div>
+        <div class="g-foot"><span>XP: <b>564</b></span><span class="red">SHIPPING</span></div>
+      </a>
+      <a class="g-card reveal" href="generator.html#mode=personal&name=2AM+THEORIST&cls=PHILOSOPHER&status=SLEEPY&lvl=5&tag=ONE+MORE+VIDEO&s1=90&s2=35&s3=72&chips=VIBES,DELULU,SNACK+ECONOMY">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 5 · LOWKEY</span></div>
+        <div class="g-body">
+          <div class="g-radar"><i></i></div>
+          <div class="g-id"><h4>2AM THEORIST</h4><div class="g-tag">CLASS: <b>PHILOSOPHER</b> · STATUS: <b>SLEEPY</b></div></div>
+        </div>
+        <div class="g-stats">
+          <div class="g-stat"><span>AURA</span><div class="g-bar"><i style="width:90%"></i></div></div>
+          <div class="g-stat"><span>FOCUS</span><div class="g-bar"><i style="width:35%"></i></div></div>
+          <div class="g-stat"><span>RIPPLES</span><div class="g-bar"><i style="width:72%"></i></div></div>
+        </div>
+        <div class="g-chips"><span>VIBES</span><span>DELULU</span><span>SNACK ECONOMY</span></div>
+        <div class="g-foot"><span>XP: <b>235</b></span><span class="red">ONE MORE VIDEO</span></div>
+      </a>
+      <a class="g-card reveal" href="generator.html#mode=career&name=BIG+DAWG&cls=DIRECTOR&status=IN+MEETINGS&lvl=14&tag=SYNC+ON+MONDAY&s1=88&s2=75&s3=51&chips=DELEGATES,DECISIONS,COLD+EMAILS">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 14 · LOWKEY</span></div>
+        <div class="g-body">
+          <div class="g-radar"><i></i></div>
+          <div class="g-id"><h4>BIG DAWG</h4><div class="g-tag">ROLE: <b>DIRECTOR</b> · STATUS: <b>IN MEETINGS</b></div></div>
+        </div>
+        <div class="g-stats">
+          <div class="g-stat"><span>EXP</span><div class="g-bar"><i style="width:88%"></i></div></div>
+          <div class="g-stat"><span>SKILL</span><div class="g-bar"><i style="width:75%"></i></div></div>
+          <div class="g-stat"><span>REPUTATION</span><div class="g-bar"><i style="width:51%"></i></div></div>
+        </div>
+        <div class="g-chips"><span>DELEGATES</span><span>DECISIONS</span><span>COLD EMAILS</span></div>
+        <div class="g-foot"><span>XP: <b>658</b></span><span class="red">SYNC ON MONDAY</span></div>
+      </a>
+    </div>
+  </div>
+</section>
 
 <section id="how">
   <div class="wrap">
