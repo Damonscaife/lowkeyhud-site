@@ -74,7 +74,7 @@ hey — i built this because posting about myself online is exhausting, but a st
 
 Each link opens the generator with that exact card rendered. To post as an **image** (images out-reach bare links by a lot): open the link → "Download PNG" (or "GIF" on Pro) → post the image with the caption + link.
 
-**Exported PNGs are already done** — `launch-cards/night-owl.png`, `launch-cards/2am-theorist.png`, `launch-cards/lowkey-legend.png` (1080×1350, watermarked, free tier). Re-render anytime with `node scripts/export-cards.mjs`.
+**Exported PNGs and looping GIFs are already done** — `launch-cards/night-owl.png`, `launch-cards/2am-theorist.png`, `launch-cards/lowkey-legend.png` (1080×1350, watermarked, free tier) plus the same three as `.gif` (540×675, 18 frames, looping — these upload natively to X and Discord with motion). Re-render anytime with `node scripts/export-cards.mjs`.
 
 ### 1 · NIGHT OWL — the "up late again" card
 `https://lowkeyhud.com/generator#mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS`

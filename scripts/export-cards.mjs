@@ -4,8 +4,9 @@
 // exactly what a visitor exports from lowkeyhud.com.
 //
 // Usage:  node scripts/export-cards.mjs
-// Writes PNGs into launch-cards/ (1080x1350, free tier = watermarked, per the
-// launch-kit rule: don't remove the watermark — it's the distribution loop).
+// Writes PNGs (1080x1350) and looping GIFs (540x675, 12fps) into launch-cards/.
+// Free tier = watermarked, per the launch-kit rule: don't remove the
+// watermark — it's the distribution loop. GIFs upload natively to X/Discord.
 
 import { spawn } from 'child_process';
 import { writeFileSync, mkdirSync, rmSync } from 'fs';
@@ -27,6 +28,37 @@ const CARDS = [
 
 const profile = path.join(os.tmpdir(), 'lkh-chrome-' + process.pid);
 mkdirSync(profile, { recursive: true });
+
+// Lightweight GIF structure check (header, dimensions, frame count, loop block).
+function gifInfo(buf) {
+  if (buf.slice(0, 6).toString('ascii') !== 'GIF89a') throw new Error('not gif89a');
+  const w = buf.readUInt16LE(6), h = buf.readUInt16LE(8);
+  const packed = buf[10];
+  let off = 13 + ((packed & 0x80) ? (2 << (packed & 7)) * 3 : 0);
+  let frames = 0, loop = false;
+  while (off < buf.length) {
+    const b = buf[off];
+    if (b === 0x3b) break;                       // trailer
+    if (b === 0x21) {                            // extension
+      const label = buf[off + 1];
+      off += 2;
+      if (label === 0xff && buf[off] === 0x0b && buf.slice(off + 1, off + 12).toString('ascii') === 'NETSCAPE2.0') loop = true;
+      while (off < buf.length && buf[off] !== 0x00) off += 1 + buf[off];
+      off++;
+    } else if (b === 0x2c) {                     // image descriptor
+      frames++;
+      off += 9;
+      const ip = buf[off++];
+      if (ip & 0x80) off += (2 << (ip & 7)) * 3;
+      off++;                                     // LZW min code size
+      while (off < buf.length && buf[off] !== 0x00) off += 1 + buf[off];
+      off++;
+    } else {
+      throw new Error('bad gif block at byte ' + off);
+    }
+  }
+  return { w, h, frames, loop };
+}
 
 const chrome = spawn(CHROME, [
   '--headless=new',
@@ -130,15 +162,50 @@ async function main() {
     const out = path.join(OUT_DIR, card.file + '.png');
     writeFileSync(out, png);
     console.log('✓ ' + card.name + ' -> ' + path.relative(ROOT, out) + ' (' + (png.length / 1024).toFixed(0) + ' KB, ' + v.w + 'x' + v.h + ')');
+
+    // Looping GIF via the page's own dependency-free encoder (watermarked free tier).
+    // The browser decodes the blob into a real Image first, proving it's valid.
+    const g = await send(ws, 'Runtime.evaluate', {
+      expression: `new Promise(function(resolve){
+        buildGifBlob(function(blob){
+          var url = URL.createObjectURL(blob);
+          var img = new Image();
+          img.onload = function(){
+            var fr = new FileReader();
+            fr.onload = function(){ resolve({ w: img.naturalWidth, h: img.naturalHeight, dataUrl: fr.result }); };
+            fr.readAsDataURL(blob);
+          };
+          img.onerror = function(){ resolve({ error: 'browser could not decode the gif' }); };
+          img.src = url;
+        });
+      })`,
+      awaitPromise: true,
+      returnByValue: true
+    });
+    const gv = g.result && g.result.value;
+    if (!gv || gv.error || !gv.dataUrl || !gv.dataUrl.startsWith('data:image/gif')) throw new Error('no gif for ' + card.name + (gv && gv.error ? ' (' + gv.error + ')' : ''));
+    if (gv.w !== 540 || gv.h !== 675) throw new Error('gif wrong size for ' + card.name + ': ' + gv.w + 'x' + gv.h);
+    const gif = Buffer.from(gv.dataUrl.split(',')[1], 'base64');
+    const info = gifInfo(gif);
+    console.log('  [debug] gif info ' + card.name + ': ' + JSON.stringify(info) + ' size=' + gif.length);
+    if (!info.loop || info.frames < 10) throw new Error('gif not looping/multi-frame for ' + card.name);
+    const gout = path.join(OUT_DIR, card.file + '.gif');
+    writeFileSync(gout, gif);
+    console.log('✓ ' + card.name + ' gif -> ' + path.relative(ROOT, gout) + ' (' + (gif.length / 1024).toFixed(0) + ' KB, ' + info.w + 'x' + info.h + ', ' + info.frames + ' frames, looping)');
   }
 
   ws.close();
   chrome.kill();
-  rmSync(profile, { recursive: true, force: true });
+  // Give Chrome a beat to release the profile dir before cleanup.
+  await sleep(800);
+  try { rmSync(profile, { recursive: true, force: true }); } catch (e) {}
 }
 
 main().catch((e) => {
   console.error('export failed: ' + e.message);
-  try { chrome.kill(); rmSync(profile, { recursive: true, force: true }); } catch (e2) {}
+  try { chrome.kill(); } catch (e2) {}
+  setTimeout(function(){
+    try { rmSync(profile, { recursive: true, force: true }); } catch (e3) {}
+  }, 1000);
   process.exit(1);
 });
