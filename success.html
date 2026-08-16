@@ -113,14 +113,58 @@
 <script>
   var p = new URLSearchParams(location.search);
   var key = (p.get("key") || "").trim();
-  if(key){
-    try { sessionStorage.setItem("lowkeyhud:pending-key", key); } catch(e){}
-    document.getElementById("key").textContent = key;
-    document.getElementById("key-box").hidden = false;
-    document.getElementById("intro").textContent = "Here's your key. Stash it, then unlock the generator in one click.";
+  var orderId = (p.get("order") || "").trim();
+  // Paste your Worker's /lookup URL here after deploying license-worker.js.
+  // Until it's set, buyers fall back to "check your receipt email" — safe, no key in any URL.
+  var PRO_LOOKUP_URL = "";
+
+  var keyEl = document.getElementById("key");
+  var keyBox = document.getElementById("key-box");
+  var noKey = document.getElementById("no-key");
+  var intro = document.getElementById("intro");
+
+  function showKey(k){
+    try { sessionStorage.setItem("lowkeyhud:pending-key", k); } catch(e){}
+    keyEl.textContent = k;
+    keyBox.hidden = false;
+    noKey.hidden = true;
+    intro.textContent = "Here's your key. Stash it, then unlock the generator in one click.";
+  }
+  function showFinding(){
+    keyBox.hidden = true;
+    noKey.hidden = false;
+    noKey.textContent = "finding your key — usually a couple seconds…";
+    intro.textContent = "Paid up. Grabbing your key, hold tight.";
+  }
+  function showReceipt(){
+    keyBox.hidden = true;
+    noKey.hidden = false;
+    noKey.textContent = "your license key is in your receipt email. check your inbox (and spam, lowkey).";
+    intro.textContent = "Paid up. Your key's in the receipt — grab it, then unlock the generator.";
+  }
+
+  if (key) {
+    showKey(key);
+  } else if (orderId && PRO_LOOKUP_URL) {
+    showFinding();
+    var tries = 0;
+    var MAX_TRIES = 15; // 15 x 2s = 30s ceiling before falling back to the receipt
+    (function poll(){
+      tries++;
+      fetch(PRO_LOOKUP_URL + "?order=" + encodeURIComponent(orderId), { credentials: "omit" })
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if (j && j.ok && j.key) { showKey(j.key); }
+          else if (tries < MAX_TRIES) { setTimeout(poll, 2000); }
+          else { showReceipt(); }
+        })
+        .catch(function(){
+          if (tries < MAX_TRIES) { setTimeout(poll, 2000); }
+          else { showReceipt(); }
+        });
+    })();
   } else {
-    document.getElementById("no-key").hidden = false;
-    document.getElementById("intro").textContent = "Paid up. Your key's in the receipt — grab it, then unlock the generator.";
+    showReceipt();
   }
 
   var copyBtn = document.getElementById("copy");

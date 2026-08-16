@@ -11,6 +11,7 @@
 //   node scripts/test-license.mjs --live   # + live contract check
 
 import { readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { createHmac } from 'crypto';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -41,8 +42,25 @@ function mockLemon(status, body) {
   };
 }
 
-function callWorker({ path = '/validate', method = 'POST', body, ip = 'unit-test-ip', origin = 'https://lowkeyhud.com' } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+// In-memory KV + secret, standing in for the Cloudflare bindings.
+function mockEnv(secret = 'test-secret') {
+  const store = new Map();
+  return {
+    WEBHOOK_SECRET: secret,
+    LICENSES: {
+      async get(k) { return store.has(k) ? store.get(k) : null; },
+      async put(k, v) { store.set(k, v); }
+    }
+  };
+}
+
+// Lemon Squeezy signs the raw body with HMAC-SHA256 hex, same as our Worker checks.
+function sign(body, secret) {
+  return createHmac('sha256', secret).update(body).digest('hex');
+}
+
+function callWorker({ path = '/validate', method = 'POST', body, ip = 'unit-test-ip', origin = 'https://lowkeyhud.com', env = mockEnv(), headers: extra = {} } = {}) {
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, extra);
   if (origin) headers['Origin'] = origin;
   if (ip) headers['cf-connecting-ip'] = ip;
   const request = new Request('https://worker.example' + path, {
@@ -50,7 +68,7 @@ function callWorker({ path = '/validate', method = 'POST', body, ip = 'unit-test
     headers,
     body: body === undefined ? undefined : (typeof body === 'string' ? body : JSON.stringify(body))
   });
-  return worker.fetch(request);
+  return worker.fetch(request, env);
 }
 
 console.log('license-worker unit tests\n');
@@ -106,6 +124,42 @@ for (let i = 0; i < 21; i++) {
 ok('rate limit -> 429 after 20 requests', saw429);
 
 globalThis.fetch = realFetch;
+
+// 10. webhook signature verification
+console.log('\nwebhook + lookup tests');
+const wenv = mockEnv('test-secret');
+
+const orderBody = JSON.stringify({
+  meta: { event_name: 'order_created' },
+  data: { type: 'orders', id: '42', attributes: { identifier: 'uuid-abc', user_email: 'a@b.com' } }
+});
+r = await callWorker({ path: '/webhook', method: 'POST', body: orderBody, env: wenv, headers: { 'X-Signature': sign(orderBody, 'test-secret'), 'X-Event-Name': 'order_created' } });
+ok('order_created webhook (valid sig) -> 200', r.status === 200);
+
+r = await callWorker({ path: '/webhook', method: 'POST', body: orderBody, env: wenv, headers: { 'X-Signature': 'deadbeef', 'X-Event-Name': 'order_created' } });
+ok('webhook bad signature -> 401', r.status === 401);
+
+r = await callWorker({ path: '/webhook', method: 'POST', body: orderBody, env: wenv });
+ok('webhook missing signature -> 401', r.status === 401);
+
+const lkBody = JSON.stringify({
+  meta: { event_name: 'license_key_created' },
+  data: { type: 'license-keys', id: '1', attributes: { key: 'KEY-123', order_id: 42 } }
+});
+r = await callWorker({ path: '/webhook', method: 'POST', body: lkBody, env: wenv, headers: { 'X-Signature': sign(lkBody, 'test-secret'), 'X-Event-Name': 'license_key_created' } });
+ok('license_key_created webhook -> 200', r.status === 200);
+
+// 11. lookup joins order_identifier -> order_id -> key
+r = await callWorker({ path: '/lookup?order=uuid-abc', method: 'GET', env: wenv });
+j = await r.json();
+ok('lookup by order identifier -> key', r.status === 200 && j.ok === true && j.key === 'KEY-123');
+
+r = await callWorker({ path: '/lookup?order=missing', method: 'GET', env: wenv });
+ok('lookup unknown order -> 404 not ready', r.status === 404);
+
+// 12. webhook without KV bound must NOT ack (500) so Lemon retries
+r = await callWorker({ path: '/webhook', method: 'POST', body: lkBody, env: { WEBHOOK_SECRET: 'test-secret' }, headers: { 'X-Signature': sign(lkBody, 'test-secret'), 'X-Event-Name': 'license_key_created' } });
+ok('webhook without KV -> 500', r.status === 500);
 
 // optional live contract check against the real API
 if (LIVE) {

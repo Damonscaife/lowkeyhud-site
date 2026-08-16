@@ -1,0 +1,17 @@
+# wrangler.toml — Cloudflare Worker config for lowkeyhud-license
+# (see license-worker.js for the full runbook)
+
+name = "lowkeyhud-license"
+main = "license-worker.js"
+compatibility_date = "2024-11-01"
+
+# KV namespace that stores order_identifier -> order_id -> license key.
+# Create it ONCE, then paste the id it prints here:
+#   npx wrangler kv namespace create LOWKEYHUD_LICENSES
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "PASTE_KV_NAMESPACE_ID"
+
+# The webhook signing secret is NOT stored here on purpose.
+# Set it with:  npx wrangler secret put WEBHOOK_SECRET
+# (use the exact same value in the Lemon Squeezy webhook settings)
