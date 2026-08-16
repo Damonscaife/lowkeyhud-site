@@ -26,8 +26,12 @@ const genFile = LIVE
   ? 'https://lowkeyhud.com/generator'
   : pathToFileURL(path.join(ROOT, 'generator.html')).href;
 
+// Avatar demo on the hero card: a randomuser placeholder portrait (a clearly
+// fictional person — safe for public marketing). URL-encoded for the hash.
+const PIC = 'https%3A%2F%2Frandomuser.me%2Fapi%2Fportraits%2Fmen%2F75.jpg';
+
 const CARDS = [
-  { file: 'night-owl', name: 'NIGHT OWL', hash: 'mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS' },
+  { file: 'night-owl', name: 'NIGHT OWL', pic: true, hash: 'mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS&pic=' + PIC },
   { file: '2am-theorist', name: '2AM THEORIST', hash: 'mode=personal&name=2AM+THEORIST&cls=PHILOSOPHER&status=SLEEPY&lvl=5&tag=ONE+MORE+VIDEO&s1=90&s2=35&s3=72&chips=VIBES,DELULU,SNACK+ECONOMY' },
   { file: 'lowkey-legend', name: 'LOWKEY LEGEND', hash: 'mode=personal&name=LOWKEY+LEGEND&cls=MENACE&status=UNBOTHERED&lvl=11&tag=TOO+CHILL&s1=94&s2=40&s3=66&chips=NO+CAP,OFF+GRID,COLD+EMAILS' }
 ];
@@ -147,6 +151,25 @@ async function main() {
     if (!nameCheck.result || nameCheck.result.value !== true) {
       throw new Error('wrong card loaded for ' + card.name);
     }
+    // If the card carries a profile pic, wait for it to actually load (it loads
+    // asynchronously, and may go through the weserv fallback) before drawing.
+    if (card.pic) {
+      const picWait = await send(ws, 'Runtime.evaluate', {
+        expression: `new Promise(function(resolve){
+          var tries = 0;
+          (function poll(){
+            if (picReady()) return resolve(true);
+            if (++tries > 120) return resolve(false);
+            setTimeout(poll, 100);
+          })();
+        })`,
+        awaitPromise: true,
+        returnByValue: true
+      });
+      if (!picWait.result || !picWait.result.value) throw new Error('avatar did not load for ' + card.name);
+      console.log('  avatar loaded for ' + card.name);
+      await sleep(200);
+    }
     const r = await send(ws, 'Runtime.evaluate', {
       expression: `(function(){
         var cv = drawExport(readData(), false);
@@ -158,13 +181,27 @@ async function main() {
           if (r2 < 30 && g2 < 30 && b2 < 40) dark++;
           if (g2 > 150 && r2 < 200 && b2 < 200) green++;
         }
-        return { w: cv.width, h: cv.height, dark: dark, green: green, dataUrl: cv.toDataURL('image/png') };
+        // radar circle centre (cx=242, cy=330, r=150): an avatar fills it with
+        // photo pixels; the radar leaves it dark. Sample a small patch there.
+        var cx = 242, cy = 330, lit = 0;
+        for (var yy = cy-10; yy < cy+10; yy++){
+          for (var xx = cx-10; xx < cx+10; xx++){
+            var o = (yy*cv.width + xx)*4;
+            if (px[o] > 40 || px[o+1] > 40 || px[o+2] > 40) lit++;
+          }
+        }
+        return { w: cv.width, h: cv.height, dark: dark, green: green, avatarLit: lit, dataUrl: cv.toDataURL('image/png') };
       })()`,
       returnByValue: true
     });
     const v = r.result && r.result.value;
     if (!v || !v.dataUrl || !v.dataUrl.startsWith('data:image/png')) throw new Error('no png for ' + card.name);
     if (v.w !== 1080 || v.h !== 1350 || v.dark < 5 || v.green < 5) throw new Error('canvas looks wrong for ' + card.name + ' ' + JSON.stringify({ w: v.w, h: v.h, dark: v.dark, green: v.green }));
+    // The avatar card must show a photo in the radar circle; non-avatar cards
+    // must show the dark radar centre instead.
+    if (card.pic && v.avatarLit < 200) throw new Error('avatar not visible in export for ' + card.name + ' avatarLit=' + v.avatarLit);
+    if (!card.pic && v.avatarLit > 50) throw new Error('unexpected avatar pixels for ' + card.name + ' avatarLit=' + v.avatarLit);
+    if (card.pic) console.log('  avatar visible in export (avatarLit=' + v.avatarLit + '/400)');
     const png = Buffer.from(v.dataUrl.split(',')[1], 'base64');
     const out = path.join(OUT_DIR, card.file + '.png');
     writeFileSync(out, png);

@@ -74,12 +74,14 @@ hey — i built this because posting about myself online is exhausting, but a st
 
 Each link opens the generator with that exact card rendered. To post as an **image** (images out-reach bare links by a lot): open the link → "Download PNG" (or "GIF" on Pro) → post the image with the caption + link.
 
-**Exported PNGs and looping GIFs are already done** — `launch-cards/night-owl.png`, `launch-cards/2am-theorist.png`, `launch-cards/lowkey-legend.png` (1080×1350, watermarked, free tier) plus the same three as `.gif` (540×675, 18 frames, looping — these upload natively to X and Discord with motion). Re-render anytime with `node scripts/export-cards.mjs` (local file) or `node scripts/export-cards.mjs --live` (renders from https://lowkeyhud.com/generator so the kit always matches the exact deployed code).
+**Exported PNGs and looping GIFs are already done** — `launch-cards/night-owl.png`, `launch-cards/2am-theorist.png`, `launch-cards/lowkey-legend.png` (1080×1350, watermarked, free tier) plus the same three as `.gif` (540×675, 18 frames, looping — these upload natively to X and Discord with motion). `night-owl.png/.gif` demo the **avatar-in-radar** look (a placeholder portrait via the `pic=` param). Re-render anytime with `node scripts/export-cards.mjs` (local file) or `node scripts/export-cards.mjs --live` (renders from https://lowkeyhud.com/generator so the kit always matches the exact deployed code).
 
-### 1 · NIGHT OWL — the "up late again" card
-`https://lowkeyhud.com/generator#mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS`
+### 1 · NIGHT OWL — the "up late again" card (shows the avatar-in-radar look)
+`https://lowkeyhud.com/generator#mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS&pic=https%3A%2F%2Frandomuser.me%2Fapi%2Fportraits%2Fmen%2F75.jpg`
 
 Caption: `me at 2am — AURA intact, NO MEETINGS on the calendar. tap to remix →`
+
+*This card carries a profile pic (the `pic=` param) so the radar shows an avatar instead of the rings — swap the URL for your own photo before posting, or drop `&pic=…` to show the radar.*
 
 ### 2 · 2AM THEORIST — the delulu one
 `https://lowkeyhud.com/generator#mode=personal&name=2AM+THEORIST&cls=PHILOSOPHER&status=SLEEPY&lvl=5&tag=ONE+MORE+VIDEO&s1=90&s2=35&s3=72&chips=VIBES,DELULU,SNACK+ECONOMY`
