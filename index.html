@@ -252,6 +252,9 @@
   footer{border-top:1px solid var(--line);padding:32px 0 48px;margin-top:40px}
   .foot-inner{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--faint);font-family:var(--mono);font-size:.74rem;letter-spacing:.06em}
   .foot-inner b{color:var(--dim);font-weight:600}
+  .foot-links{display:flex;gap:18px;flex-wrap:wrap}
+  .foot-links a{color:var(--faint);transition:color .2s}
+  .foot-links a:hover{color:var(--green)}
 
   /* ---------- download band ---------- */
   .dl-band{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:44px;background:var(--panel);position:relative;overflow:hidden}
@@ -322,8 +325,6 @@
       <a href="#hud">the hud</a>
       <a href="#gallery">examples</a>
       <a href="#how">how it works</a>
-      <a href="#roast">daily roast</a>
-      <a href="#download">download</a>
     </div>
     <a class="btn sm primary" href="generator.html">generate yours</a>
   </div>
@@ -337,7 +338,6 @@
       <p class="sub">A heads-up display for people who <b>don't want to be seen</b>. Paste a few facts, get a cooler you — animated, shareable, <b>no cap</b>.</p>
       <div class="cta-row">
         <a class="btn primary" href="generator.html">Generate your HUD →</a>
-        <a class="btn" href="roast.html">Today's roast</a>
         <a class="btn" href="#how">See how it works</a>
       </div>
       <p class="micro">// no signup wall. just a url.</p>
@@ -414,19 +414,19 @@
         <div class="g-foot"><span>XP: <b>329</b></span><span class="red">MAKING IT UP</span></div>
         <div class="g-hint">tap to remix →</div>
       </a>
-      <a class="g-card reveal" href="generator.html#mode=career&name=SHIP+IT+SAM&cls=FOUNDER&status=LOWKEY+BURNING+OUT&lvl=12&tag=SHIPPING&s1=82&s2=70&s3=64&chips=PIVOTING,HUSTLE,3+TABS+TOO+MANY">
-        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 12 · LOWKEY</span></div>
+      <a class="g-card reveal" href="generator.html#mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 6 · LOWKEY</span></div>
         <div class="g-body">
           <div class="g-radar"><i></i></div>
-          <div class="g-id"><h4>SHIP IT SAM</h4><div class="g-tag">ROLE: <b>FOUNDER</b> · STATUS: <b>BURNING OUT</b></div></div>
+          <div class="g-id"><h4>NIGHT OWL</h4><div class="g-tag">CLASS: <b>ARTIST</b> · STATUS: <b>UP LATE</b></div></div>
         </div>
         <div class="g-stats">
-          <div class="g-stat"><span>EXP</span><div class="g-bar"><i style="width:82%"></i></div></div>
-          <div class="g-stat"><span>SKILL</span><div class="g-bar"><i style="width:70%"></i></div></div>
-          <div class="g-stat"><span>REPUTATION</span><div class="g-bar"><i style="width:64%"></i></div></div>
+          <div class="g-stat"><span>AURA</span><div class="g-bar"><i style="width:68%"></i></div></div>
+          <div class="g-stat"><span>FOCUS</span><div class="g-bar"><i style="width:52%"></i></div></div>
+          <div class="g-stat"><span>RIPPLES</span><div class="g-bar"><i style="width:80%"></i></div></div>
         </div>
-        <div class="g-chips"><span>PIVOTING</span><span>HUSTLE</span><span>3 TABS TOO MANY</span></div>
-        <div class="g-foot"><span>XP: <b>564</b></span><span class="red">SHIPPING</span></div>
+        <div class="g-chips"><span>VIBES</span><span>DELULU</span><span>NO MEETINGS</span></div>
+        <div class="g-foot"><span>XP: <b>287</b></span><span class="red">DOING IT LIVE</span></div>
         <div class="g-hint">tap to remix →</div>
       </a>
       <a class="g-card reveal" href="generator.html#mode=personal&name=2AM+THEORIST&cls=PHILOSOPHER&status=SLEEPY&lvl=5&tag=ONE+MORE+VIDEO&s1=90&s2=35&s3=72&chips=VIBES,DELULU,SNACK+ECONOMY">
@@ -444,19 +444,19 @@
         <div class="g-foot"><span>XP: <b>235</b></span><span class="red">ONE MORE VIDEO</span></div>
         <div class="g-hint">tap to remix →</div>
       </a>
-      <a class="g-card reveal" href="generator.html#mode=career&name=BIG+DAWG&cls=DIRECTOR&status=IN+MEETINGS&lvl=14&tag=SYNC+ON+MONDAY&s1=88&s2=75&s3=51&chips=DELEGATES,DECISIONS,COLD+EMAILS">
-        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 14 · LOWKEY</span></div>
+      <a class="g-card reveal" href="generator.html#mode=personal&name=LOWKEY+LEGEND&cls=MENACE&status=UNBOTHERED&lvl=11&tag=TOO+CHILL&s1=94&s2=40&s3=66&chips=NO+CAP,OFF+GRID,COLD+EMAILS">
+        <div class="g-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 11 · LOWKEY</span></div>
         <div class="g-body">
           <div class="g-radar"><i></i></div>
-          <div class="g-id"><h4>BIG DAWG</h4><div class="g-tag">ROLE: <b>DIRECTOR</b> · STATUS: <b>IN MEETINGS</b></div></div>
+          <div class="g-id"><h4>LOWKEY LEGEND</h4><div class="g-tag">CLASS: <b>MENACE</b> · STATUS: <b>UNBOTHERED</b></div></div>
         </div>
         <div class="g-stats">
-          <div class="g-stat"><span>EXP</span><div class="g-bar"><i style="width:88%"></i></div></div>
-          <div class="g-stat"><span>SKILL</span><div class="g-bar"><i style="width:75%"></i></div></div>
-          <div class="g-stat"><span>REPUTATION</span><div class="g-bar"><i style="width:51%"></i></div></div>
+          <div class="g-stat"><span>AURA</span><div class="g-bar"><i style="width:94%"></i></div></div>
+          <div class="g-stat"><span>FOCUS</span><div class="g-bar"><i style="width:40%"></i></div></div>
+          <div class="g-stat"><span>RIPPLES</span><div class="g-bar"><i style="width:66%"></i></div></div>
         </div>
-        <div class="g-chips"><span>DELEGATES</span><span>DECISIONS</span><span>COLD EMAILS</span></div>
-        <div class="g-foot"><span>XP: <b>658</b></span><span class="red">SYNC ON MONDAY</span></div>
+        <div class="g-chips"><span>NO CAP</span><span>OFF GRID</span><span>COLD EMAILS</span></div>
+        <div class="g-foot"><span>XP: <b>512</b></span><span class="red">TOO CHILL</span></div>
         <div class="g-hint">tap to remix →</div>
       </a>
     </div>
@@ -492,83 +492,24 @@
 <section>
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="kicker">two flavors</div>
-      <h2>Pick your <span class="accent">HUD</span>.</h2>
+      <div class="kicker">the hud</div>
+      <h2>Your grid is fine. <span class="accent">Your HUD is better.</span></h2>
+      <p class="sub">The animated identity card for your instagram, twitter, wherever. Paste a few facts, get a cooler you.</p>
     </div>
-    <div class="dirs">
-      <div class="dir reveal">
-        <div class="lbl">personal hud // for your socials</div>
-        <h3>Your grid is fine. Your HUD is better.</h3>
-        <p class="quote">The <em>animated identity card</em> for your instagram, twitter, wherever.</p>
-        <ul>
-          <li><i>▸</i> AURA meter — because <b>vibes are quantifiable</b></li>
-          <li><i>▸</i> Radar sweep — <b>you</b>, located</li>
-          <li><i>▸</i> VIBES breakdown — <b>what you're actually about</b></li>
-          <li><i>▸</i> Looping animation — <b>screenshot-proof</b></li>
-        </ul>
-      </div>
-      <div class="dir alt reveal">
-        <div class="lbl">career hud // for linkedin</div>
-        <h3>8 yrs · 3 companies · 0 motivational posts.</h3>
-        <p class="quote">Your résumé, reimagined as a <em>game-character select screen</em>.</p>
-        <ul>
-          <li><i>▸</i> EXP bar — <b>seniority, visualized</b></li>
-          <li><i>▸</i> SKILL / REPUTATION bars — <b>the humblebrag that isn't</b></li>
-          <li><i>▸</i> LOADOUT slots — <b>your skills as equipment</b></li>
-          <li><i>▸</i> LVL tag — <b>rate my build</b></li>
-        </ul>
-      </div>
+    <div class="dir reveal" style="max-width:760px">
+      <div class="lbl">personal hud // for your socials</div>
+      <h3>Vibes, quantified.</h3>
+      <p class="quote">One card that says who you are <em>without saying much at all</em>.</p>
+      <ul>
+        <li><i>▸</i> AURA meter — because <b>vibes are quantifiable</b></li>
+        <li><i>▸</i> Radar sweep — <b>you</b>, located</li>
+        <li><i>▸</i> VIBES breakdown — <b>what you're actually about</b></li>
+        <li><i>▸</i> Looping animation — <b>screenshot-proof</b></li>
+      </ul>
     </div>
     <div class="dirs-cta">
       <a class="btn primary" href="generator.html">Make yours →</a>
       <span class="micro" style="margin-top:0">// ~20 seconds. no signup.</span>
-    </div>
-  </div>
-</section>
-
-<section id="roast">
-  <div class="wrap roast-wrap">
-    <div class="reveal">
-      <div class="kicker">daily roast</div>
-      <h2>One HUD read<br/>on your day. <span class="accent">Every day.</span></h2>
-      <p class="sub" style="margin-top:16px">No data. No signup. Just a generated roast-forecast rendered as a HUD card, shareable in one tap.</p>
-      <div class="cta-row">
-        <a class="btn primary" href="roast.html">Get today's roast →</a>
-      </div>
-    </div>
-    <a class="roast-box reveal" href="roast.html">
-      <div class="head"><span>DAILY_ROAST // <span id="roast-date"></span></span><span class="green">LIVE</span></div>
-      <div class="roast-line"><span id="roast-text"></span><span class="cursor"></span></div>
-      <div class="roast-foot"><span>HUD SAYS</span><span class="nocap">NO CAP</span></div>
-    </a>
-  </div>
-</section>
-
-<section id="download">
-  <div class="wrap">
-    <div class="dl-band reveal">
-      <div class="dl-left">
-        <div class="kicker">desktop app</div>
-        <h2>The HUD for your <span class="accent">screen</span>.</h2>
-        <p class="dl-copy">Prefer it as an actual overlay? A quiet desktop HUD with the time, a daily roast, and a focus timer — sitting in the corner. Drag it, dim it, or let clicks pass through. No window to open. No noise.</p>
-        <ul class="dl-list">
-          <li><i>▸</i> time + <b>daily roast</b>, always in the corner</li>
-          <li><i>▸</i> a <b>focus timer</b> that never yells at you</li>
-          <li><i>▸</i> click-through, opacity, launch at login</li>
-        </ul>
-      </div>
-      <div class="dl-right">
-        <div class="dl-card mono">
-          <div class="dl-top"><span class="online-dot"><i></i>ONLINE</span><span class="lvl">LVL 9 · LOWKEY</span></div>
-          <div class="dl-clock">14:32<span class="s">:05</span></div>
-          <div class="dl-roast">hydrate. this is the HUD talking. <b>no cap</b>.</div>
-          <div class="dl-focus"><span>FOCUS</span><span class="t">25:00</span><span class="b">start</span></div>
-        </div>
-        <div class="dl-cta">
-          <a class="btn primary" href="https://github.com/Damonscaife/lowkeyhud-site/tree/main/desktop" target="_blank" rel="noopener">Get the source</a>
-          <span class="dl-soon">installers · macOS / Windows / Linux — soon</span>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -591,41 +532,18 @@
 <footer>
   <div class="wrap foot-inner">
     <span><b>lowkeyhud</b> © <span id="yr"></span> — a heads-up display for people who don't want to be seen.</span>
+    <span class="foot-links">
+      <a href="generator.html#mode=career">career HUD</a>
+      <a href="roast.html">daily roast</a>
+      <a href="https://github.com/Damonscaife/lowkeyhud-site/tree/main/desktop" target="_blank" rel="noopener">desktop app</a>
+    </span>
     <span>made with restraint · <span class="green">no cap</span></span>
   </div>
 </footer>
 
 <script>
-  // roast cycler
-  var roasts = [
-    "today's forecast: 3 meetings. 1 of them necessary. lowkey.",
-    "you opened the calendar 14 times. it's still tuesday.",
-    "third snack break. respect.",
-    "your screen time called. it's worried.",
-    "the 3pm meeting could've been an email. you already know.",
-    "achievement unlocked: felt the fear, did it anyway.",
-    "hydrate. this is the HUD talking. no cap."
-  ];
-  var roastEl = document.getElementById("roast-text");
-  var ri = Math.floor(Math.random()*roasts.length);
-  function typeRoast(){
-    var text = roasts[ri % roasts.length];
-    ri++;
-    roastEl.textContent = "";
-    var i = 0;
-    var t = setInterval(function(){
-      roastEl.textContent += text[i];
-      i++;
-      if(i >= text.length) clearInterval(t);
-    }, 28);
-  }
-  typeRoast();
-  setInterval(typeRoast, 6000);
-
-  // date + year
+  // year
   var d = new Date();
-  document.getElementById("roast-date").textContent =
-    d.toISOString().slice(0,10).replace(/-/g,".");
   document.getElementById("yr").textContent = d.getFullYear();
 
   // fake viewers
