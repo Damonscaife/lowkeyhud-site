@@ -280,28 +280,29 @@
   .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
   @media(max-width:1080px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.gallery-grid{grid-template-columns:1fr}}
-  .g-card{display:block;position:relative;border:1px solid var(--line-strong);border-radius:12px;background:linear-gradient(180deg, rgba(134,224,171,.05), rgba(14,19,22,.6) 45%, var(--bg-2));padding:16px;font-family:var(--mono);text-decoration:none;color:var(--text);transition:transform .2s ease,border-color .2s ease}
+  .g-card{display:flex;flex-direction:column;position:relative;border:1px solid var(--line-strong);border-radius:12px;background:linear-gradient(180deg, rgba(134,224,171,.05), rgba(14,19,22,.6) 45%, var(--bg-2));padding:16px;font-family:var(--mono);text-decoration:none;color:var(--text);transition:transform .2s ease,border-color .2s ease}
   .g-card:hover{transform:translateY(-4px);border-color:var(--green)}
   .g-card::before,.g-card::after{content:"";position:absolute;width:14px;height:14px}
   .g-card::before{top:-1px;left:-1px;border-top:2px solid var(--green);border-left:2px solid var(--green);border-top-left-radius:12px}
   .g-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);border-bottom-right-radius:12px}
   .g-top{display:flex;justify-content:space-between;align-items:center;font-size:.6rem;letter-spacing:.16em;color:var(--dim);padding-bottom:10px;border-bottom:1px solid var(--line)}
-  .g-body{display:flex;gap:12px;align-items:center;margin-top:12px}
-  .g-radar{width:46px;height:46px;border-radius:50%;border:1px solid rgba(134,224,171,.35);position:relative;flex-shrink:0;background:radial-gradient(circle, rgba(134,224,171,.08) 0 45%, transparent 72%)}
-  .g-radar::after{content:"";position:absolute;inset:13px;border-radius:50%;border:1px solid rgba(134,224,171,.22)}
-  .g-radar i{position:absolute;width:5px;height:5px;background:var(--green);border-radius:50%;top:26%;left:58%;box-shadow:0 0 6px var(--green)}
+  .g-body{display:flex;gap:10px;align-items:center;margin-top:12px}
+  .g-radar{width:42px;height:42px;border-radius:50%;border:1px solid rgba(134,224,171,.35);position:relative;flex-shrink:0;background:radial-gradient(circle, rgba(134,224,171,.08) 0 45%, transparent 72%)}
+  .g-radar::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, rgba(134,224,171,.45), transparent 70deg);animation:spin 5s linear infinite}
+  .g-radar::after{content:"";position:absolute;inset:11px;border-radius:50%;border:1px solid rgba(134,224,171,.25)}
+  .g-radar i{position:absolute;width:5px;height:5px;background:var(--green);border-radius:50%;top:26%;left:58%;box-shadow:0 0 6px var(--green);z-index:1}
   .g-id{min-width:0}
   .g-id h4{font-size:.82rem;letter-spacing:.03em;line-height:1.25}
-  .g-tag{font-size:.56rem;color:var(--dim);letter-spacing:.1em;margin-top:3px}
+  .g-tag{font-size:.55rem;color:var(--dim);letter-spacing:.06em;margin-top:4px;line-height:1.35}
   .g-tag b{color:var(--amber);font-weight:600}
   .g-stats{display:flex;flex-direction:column;gap:7px;margin-top:14px}
-  .g-stat{display:flex;align-items:center;gap:8px;font-size:.55rem;letter-spacing:.14em;color:var(--dim)}
-  .g-stat span{width:56px;flex-shrink:0}
+  .g-stat{display:flex;align-items:center;gap:8px;font-size:.55rem;letter-spacing:.1em;color:var(--dim)}
+  .g-stat span{width:68px;flex-shrink:0}
   .g-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
   .g-bar i{display:block;height:100%;background:linear-gradient(90deg, var(--green-dim), var(--green))}
   .g-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
   .g-chips span{font-size:.56rem;letter-spacing:.08em;color:var(--green);border:1px solid rgba(134,224,171,.3);border-radius:5px;padding:3px 7px}
-  .g-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:9px;border-top:1px solid var(--line);font-size:.58rem;letter-spacing:.12em;color:var(--faint)}
+  .g-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:.58rem;letter-spacing:.12em;color:var(--faint)}
   .g-foot b{color:var(--green);font-weight:600}
 
   /* reveal on scroll */
