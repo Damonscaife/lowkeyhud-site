@@ -244,8 +244,8 @@
 
       <div class="field">
         <label for="f-pic">Profile pic (URL)</label>
-        <input type="text" id="f-pic" inputmode="url" placeholder="https://… direct image link (optional)" />
-        <p class="hint" id="pic-status" style="margin-top:8px;margin-bottom:0">// optional · paste a direct image URL — we crop it into the radar</p>
+        <input type="text" id="f-pic" inputmode="url" placeholder="https://… image or X/Twitter profile link (optional)" />
+        <p class="hint" id="pic-status" style="margin-top:8px;margin-bottom:0">// optional · direct image URL or X/Twitter profile link — we crop it into the radar</p>
       </div>
 
       <div class="row2">
@@ -425,6 +425,24 @@
     var img = $("c-pic");
     return picOk && img && img.complete && img.naturalWidth > 0 && img.src;
   }
+  // Turn a social profile link into a usable avatar URL (or "instagram" when
+  // the host blocks client-side resolution entirely).
+  function resolveProfileUrl(url){
+    var u = url.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+    var host = u.split("/")[0].toLowerCase();
+    var seg = u.slice(host.length).replace(/^\/+/, "").split(/[\/?#]/)[0].replace(/^@/, "");
+    if(host === "x.com" || host === "twitter.com"){
+      var reserved = ["i","status","home","search","explore","notifications","messages","settings","intent","share","hashtag","login","signup","about","download","compose","bookmarks","lists","communities","jobs","grok","premium","tos","privacy","help","terms"];
+      var path = u.slice(host.length);
+      if(!/\/status\/|\/i\/|\/intent\/|\/share\/|\/hashtag\//.test(path) && seg && /^[A-Za-z0-9_]{1,15}$/.test(seg) && reserved.indexOf(seg) === -1){
+        return "https://unavatar.io/x/" + seg;
+      }
+    }
+    if(host === "instagram.com" || host === "instagr.am"){
+      return "instagram";
+    }
+    return url;
+  }
   function loadPic(){
     var url = (val("f-pic") || "").trim();
     var radar = $("c-radar");
@@ -438,9 +456,18 @@
       status.style.color = "";
       return;
     }
+    var resolved = resolveProfileUrl(url);
+    if(resolved === "instagram"){
+      img.removeAttribute("src");
+      radar.classList.remove("pic-mode");
+      status.textContent = "// Instagram blocks direct profile links — open the profile, right-click the avatar, “copy image address”, then paste that link here";
+      status.style.color = "var(--red)";
+      return;
+    }
     status.textContent = "// loading image…";
     status.style.color = "";
     img.crossOrigin = "anonymous";
+    var triedProxy = false;
     img.onload = function(){
       picOk = true;
       radar.classList.add("pic-mode");
@@ -448,13 +475,21 @@
       status.style.color = "var(--green)";
     };
     img.onerror = function(){
+      if(!triedProxy){
+        // Host likely blocks hotlinking/CORS (e.g. Instagram's CDN). Retry
+        // through the weserv proxy, which fetches server-side and serves CORS.
+        triedProxy = true;
+        status.textContent = "// host blocks direct use — retrying through a proxy…";
+        img.src = "https://images.weserv.nl/?url=" + encodeURIComponent(url);
+        return;
+      }
       picOk = false;
       img.removeAttribute("src");
       radar.classList.remove("pic-mode");
       status.textContent = "// couldn't import that image — it may not be a direct link, or its host blocks cross-origin use";
       status.style.color = "var(--red)";
     };
-    img.src = url;
+    img.src = resolved;
   }
 
   function readData(){
