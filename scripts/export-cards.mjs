@@ -3,8 +3,11 @@
 // headless Chrome + the generator's own canvas export, so the images match
 // exactly what a visitor exports from lowkeyhud.com.
 //
-// Usage:  node scripts/export-cards.mjs
+// Usage:  node scripts/export-cards.mjs [--live]
 // Writes PNGs (1080x1350) and looping GIFs (540x675, 12fps) into launch-cards/.
+// Default renders the local generator.html (for testing unshipped edits);
+// `--live` renders from https://lowkeyhud.com/generator so the kit matches the
+// exact code visitors get.
 // Free tier = watermarked, per the launch-kit rule: don't remove the
 // watermark — it's the distribution loop. GIFs upload natively to X/Discord.
 
@@ -18,7 +21,10 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const OUT_DIR = path.join(ROOT, 'launch-cards');
 const PORT = 9333 + Math.floor(Math.random() * 200);
-const genFile = pathToFileURL(path.join(ROOT, 'generator.html')).href;
+const LIVE = process.argv.includes('--live');
+const genFile = LIVE
+  ? 'https://lowkeyhud.com/generator'
+  : pathToFileURL(path.join(ROOT, 'generator.html')).href;
 
 const CARDS = [
   { file: 'night-owl', name: 'NIGHT OWL', hash: 'mode=personal&name=NIGHT+OWL&cls=ARTIST&status=UP+LATE&lvl=6&tag=DOING+IT+LIVE&s1=68&s2=52&s3=80&chips=VIBES,DELULU,NO+MEETINGS' },
@@ -119,6 +125,7 @@ async function waitForCard(ws, i = 0) {
 
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
+  console.log('source: ' + (LIVE ? 'https://lowkeyhud.com/generator (live)' : 'local generator.html'));
   await waitForEndpoint(`http://127.0.0.1:${PORT}/json/version`);
   const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
   const page = list.find(t => t.type === 'page');
