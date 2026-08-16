@@ -42,6 +42,7 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   .back{font-family:var(--mono);font-size:.8rem;color:var(--dim);transition:color .2s}
   .back:hover{color:var(--text)}
+  .nav-right{display:flex;gap:22px;align-items:center}
 
   .hero{text-align:center;padding:48px 0 8px}
   .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;color:var(--dim);text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:12px}
@@ -119,7 +120,11 @@
 <header>
   <div class="wrap top">
     <a class="logo" href="index.html"><span class="mark"></span>lowkeyhud</a>
-    <a class="back" href="generator.html">make your own HUD →</a>
+    <div class="nav-right">
+      <a class="back" href="index.html#gallery">examples</a>
+      <a class="back" href="index.html#how">how it works</a>
+      <a class="back" href="generator.html">make yours →</a>
+    </div>
   </div>
 </header>
 

@@ -202,8 +202,9 @@
   <div class="wrap top">
     <a class="logo" href="index.html"><span class="mark"></span>lowkeyhud</a>
     <div class="nav-right">
-      <a class="back" href="roast.html">daily roast</a>
-      <a class="back" href="index.html">← landing page</a>
+      <a class="back" href="index.html#gallery">examples</a>
+      <a class="back" href="index.html#how">how it works</a>
+      <a class="back" href="index.html">← back</a>
     </div>
   </div>
 </header>
@@ -222,10 +223,10 @@
 
       <div class="presets">
         <button type="button" class="surprise" id="btn-surprise">surprise me ✨</button>
-        <button type="button" data-preset="0">creative</button>
-        <button type="button" data-preset="1">founder</button>
-        <button type="button" data-preset="2">night owl</button>
-        <button type="button" data-preset="3">boss</button>
+        <button type="button" data-preset="0">goblin</button>
+        <button type="button" data-preset="1">night owl</button>
+        <button type="button" data-preset="2">theorist</button>
+        <button type="button" data-preset="3">legend</button>
       </div>
 
       <div class="field">
@@ -364,9 +365,9 @@
 
   var PRESETS = [
     { mode:"personal", name:"STUDIO GOBLIN", cls:"CREATIVE", status:"CAFFEINATED", level:7, tag:"MAKING IT UP", s:[78,44,91], chips:"CAFFEINE, AUDACITY, SLIGHTLY OFF GRID" },
-    { mode:"career", name:"SHIP IT SAM", cls:"FOUNDER", status:"LOWKEY BURNING OUT", level:12, tag:"SHIPPING", s:[82,70,64], chips:"PIVOTING, HUSTLE, 3 TABS TOO MANY" },
+    { mode:"personal", name:"NIGHT OWL", cls:"ARTIST", status:"UP LATE", level:6, tag:"DOING IT LIVE", s:[68,52,80], chips:"VIBES, DELULU, NO MEETINGS" },
     { mode:"personal", name:"2AM THEORIST", cls:"PHILOSOPHER", status:"SLEEPY", level:5, tag:"ONE MORE VIDEO", s:[90,35,72], chips:"VIBES, DELULU, SNACK ECONOMY" },
-    { mode:"career", name:"BIG DAWG", cls:"DIRECTOR", status:"IN MEETINGS", level:14, tag:"SYNC ON MONDAY", s:[88,75,51], chips:"DELEGATES, DECISIONS, COLD EMAILS" }
+    { mode:"personal", name:"LOWKEY LEGEND", cls:"MENACE", status:"UNBOTHERED", level:11, tag:"TOO CHILL", s:[94,40,66], chips:"NO CAP, OFF GRID, COLD EMAILS" }
   ];
 
   function applyPreset(p){
