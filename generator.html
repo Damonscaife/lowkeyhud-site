@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>lowkeyhud — generate your HUD</title>
 <meta name="description" content="Turn yourself into a HUD. Paste a few facts, get an animated, shareable card. No cap." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="lowkeyhud" />
+<meta property="og:title" content="lowkeyhud — generate your HUD" />
+<meta property="og:description" content="Turn yourself into a HUD. Paste a few facts, get an animated, shareable card. No cap." />
+<meta property="og:url" content="https://lowkeyhud.com/generator" />
+<meta property="og:image" content="https://lowkeyhud.com/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="lowkeyhud — generate your HUD" />
+<meta name="twitter:description" content="Turn yourself into a HUD. Paste a few facts, get an animated, shareable card. No cap." />
+<meta name="twitter:image" content="https://lowkeyhud.com/og.png" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0d0f'/><rect x='7' y='7' width='18' height='18' rx='3' fill='none' stroke='%2386e0ab' stroke-width='2'/><circle cx='16' cy='16' r='4' fill='%2386e0ab'/></svg>" />
 <style>
   :root{
@@ -126,6 +138,10 @@
   .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, rgba(134,224,171,.5), transparent 70deg);animation:spin 4.5s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .blip{position:absolute;width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);top:30%;left:62%}
+  .radar .avatar{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;display:none;background:var(--bg-2)}
+  .radar.pic-mode .avatar{display:block}
+  .radar.pic-mode .sweep,.radar.pic-mode .blip{display:none}
+  .radar.pic-mode::before,.radar.pic-mode::after{display:none}
   .id h3{font-size:1.05rem;letter-spacing:.04em}
   .id .tag{font-size:.72rem;color:var(--dim);letter-spacing:.16em;margin-top:2px}
   .id .tag b{color:var(--amber);font-weight:600}
@@ -217,6 +233,12 @@
         <input type="text" id="f-name" value="YOU, PROBABLY" maxlength="28" />
       </div>
 
+      <div class="field">
+        <label for="f-pic">Profile pic (URL)</label>
+        <input type="text" id="f-pic" inputmode="url" placeholder="https://… direct image link (optional)" />
+        <p class="hint" id="pic-status" style="margin-top:8px;margin-bottom:0">// optional · paste a direct image URL — we crop it into the radar</p>
+      </div>
+
       <div class="row2">
         <div class="field">
           <label for="f-cls"><span id="cls-label">Class</span></label>
@@ -273,7 +295,7 @@
           <span><span class="lvl">LVL <span id="c-lvl">9</span></span> · LOWKEY</span>
         </div>
         <div class="hud-body">
-          <div class="radar"><div class="sweep"></div><div class="blip"></div></div>
+          <div class="radar" id="c-radar"><div class="sweep"></div><div class="blip"></div><img id="c-pic" class="avatar" alt="" referrerpolicy="no-referrer" /></div>
           <div class="id">
             <h3 id="c-name">YOU, PROBABLY</h3>
             <div class="tag"><span id="c-cls-label">CLASS</span>: <b id="c-cls">CREATIVE</b> · STATUS: <b id="c-status">CHILL</b></div>
@@ -382,6 +404,44 @@
 
   var mode = "personal";
 
+  /* ---------- profile picture ---------- */
+  var picOk = false;
+  function picReady(){
+    var img = $("c-pic");
+    return picOk && img && img.complete && img.naturalWidth > 0 && img.src;
+  }
+  function loadPic(){
+    var url = (val("f-pic") || "").trim();
+    var radar = $("c-radar");
+    var img = $("c-pic");
+    var status = $("pic-status");
+    picOk = false;
+    if(!url){
+      img.removeAttribute("src");
+      radar.classList.remove("pic-mode");
+      status.textContent = "// optional · paste a direct image URL — we crop it into the radar";
+      status.style.color = "";
+      return;
+    }
+    status.textContent = "// loading image…";
+    status.style.color = "";
+    img.crossOrigin = "anonymous";
+    img.onload = function(){
+      picOk = true;
+      radar.classList.add("pic-mode");
+      status.textContent = "// imported ✓ · it'll show in the export";
+      status.style.color = "var(--green)";
+    };
+    img.onerror = function(){
+      picOk = false;
+      img.removeAttribute("src");
+      radar.classList.remove("pic-mode");
+      status.textContent = "// couldn't import that image — it may not be a direct link, or its host blocks cross-origin use";
+      status.style.color = "var(--red)";
+    };
+    img.src = url;
+  }
+
   function readData(){
     return {
       mode: mode,
@@ -391,7 +451,8 @@
       level: clampInt(val("f-lvl"), 1, 99, 9),
       tag: val("f-tag").trim().toUpperCase() || "NO CAP",
       stats: [clampInt(val("s1"),0,100,74), clampInt(val("s2"),0,100,61), clampInt(val("s3"),0,100,88)],
-      chips: val("f-chips").split(",").map(function(s){return s.trim().toUpperCase()}).filter(Boolean)
+      chips: val("f-chips").split(",").map(function(s){return s.trim().toUpperCase()}).filter(Boolean),
+      pic: (val("f-pic") || "").trim()
     };
   }
   function clampInt(v,min,max,d){ var n = parseInt(v,10); if(isNaN(n)) return d; return Math.max(min, Math.min(max, n)); }
@@ -443,6 +504,7 @@
     p.set("tag", d.tag);
     p.set("s1", d.stats[0]); p.set("s2", d.stats[1]); p.set("s3", d.stats[2]);
     p.set("chips", d.chips.join(","));
+    if(d.pic) p.set("pic", d.pic);
     history.replaceState(null, "", "#" + p.toString());
   }
 
@@ -464,6 +526,7 @@
     if(p.has("s2")) set("s2", p.get("s2"));
     if(p.has("s3")) set("s3", p.get("s3"));
     if(p.has("chips")) set("f-chips", p.get("chips"));
+    if(p.has("pic")) set("f-pic", p.get("pic"));
     // reflect slider values
     ["s1","s2","s3"].forEach(function(id){ $(id+"-val").textContent = val(id); });
   }
@@ -475,6 +538,7 @@
       update();
     });
   });
+  $("f-pic").addEventListener("input", function(){ loadPic(); update(); });
   document.querySelectorAll("#mode-seg button").forEach(function(b){
     b.addEventListener("click", function(){ mode = b.getAttribute("data-mode"); update(); });
   });
@@ -557,22 +621,33 @@
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(P, 156); ctx.lineTo(W-P, 156); ctx.stroke();
 
-    // radar
+    // avatar (profile pic) or radar
     var cx = P + 150, cy = 330, r = 150;
-    ctx.strokeStyle = "rgba(134,224,171,0.30)";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-    ctx.strokeStyle = "rgba(134,224,171,0.20)";
-    ctx.beginPath(); ctx.arc(cx, cy, r*0.66, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, r*0.33, 0, Math.PI*2); ctx.stroke();
-    // sweep
-    var ang = t === undefined ? -0.6 : t * Math.PI * 2;
-    ctx.strokeStyle = "rgba(134,224,171,0.85)";
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang)*r, cy + Math.sin(ang)*r); ctx.stroke();
-    // blip
-    ctx.fillStyle = "#86e0ab";
-    ctx.beginPath(); ctx.arc(cx + r*0.55, cy - r*0.35, 7, 0, Math.PI*2); ctx.fill();
+    if(d.pic && picReady()){
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.closePath();
+      ctx.clip();
+      ctx.drawImage($("c-pic"), cx - r, cy - r, r*2, r*2);
+      ctx.restore();
+      ctx.strokeStyle = "rgba(134,224,171,0.5)";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+    } else {
+      ctx.strokeStyle = "rgba(134,224,171,0.30)";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = "rgba(134,224,171,0.20)";
+      ctx.beginPath(); ctx.arc(cx, cy, r*0.66, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, r*0.33, 0, Math.PI*2); ctx.stroke();
+      // sweep
+      var ang = t === undefined ? -0.6 : t * Math.PI * 2;
+      ctx.strokeStyle = "rgba(134,224,171,0.85)";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang)*r, cy + Math.sin(ang)*r); ctx.stroke();
+      // blip
+      ctx.fillStyle = "#86e0ab";
+      ctx.beginPath(); ctx.arc(cx + r*0.55, cy - r*0.35, 7, 0, Math.PI*2); ctx.fill();
+    }
 
     // name + class
     var tx = cx + r + 40;
@@ -999,6 +1074,7 @@
 
   // init
   loadFromHash();
+  loadPic();
   update();
 </script>
 </body>

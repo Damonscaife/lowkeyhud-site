@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>lowkeyhud — turn yourself into a HUD</title>
 <meta name="description" content="A heads-up display for people who don't want to be seen. Paste a few facts, get a cooler you — animated, shareable, no cap." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="lowkeyhud" />
+<meta property="og:title" content="lowkeyhud — turn yourself into a HUD" />
+<meta property="og:description" content="Paste a few facts, get a cooler you — animated, shareable, no cap." />
+<meta property="og:url" content="https://lowkeyhud.com/" />
+<meta property="og:image" content="https://lowkeyhud.com/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="lowkeyhud — turn yourself into a HUD" />
+<meta name="twitter:description" content="Paste a few facts, get a cooler you — animated, shareable, no cap." />
+<meta name="twitter:image" content="https://lowkeyhud.com/og.png" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0d0f'/><rect x='7' y='7' width='18' height='18' rx='3' fill='none' stroke='%2386e0ab' stroke-width='2'/><circle cx='16' cy='16' r='4' fill='%2386e0ab'/></svg>" />
 <style>
   :root{
@@ -540,11 +552,38 @@
   barIO.observe(document.querySelector(".hud-card"));
 
   // signup (static demo)
+  // Real email capture. Create a free form at https://formspree.io, then paste
+  // its ID here (the part after /f/ in your endpoint). Until set, this is a no-op.
+  var EMAIL_FORM_ID = "";
   function signup(e){
     e.preventDefault();
+    var input = e.target.querySelector("input[type=email]");
     var btn = e.target.querySelector("button");
-    btn.textContent = "you're in ✓";
-    btn.style.background = "#9cebc0";
+    var email = (input.value || "").trim();
+    if(!EMAIL_FORM_ID){
+      console.warn("lowkeyhud: email capture not wired — set EMAIL_FORM_ID to your Formspree form id.");
+      btn.textContent = "you're in ✓";
+      btn.style.background = "#9cebc0";
+      return false;
+    }
+    btn.textContent = "one sec…";
+    btn.disabled = true;
+    fetch("https://formspree.io/f/" + EMAIL_FORM_ID, {
+      method: "POST",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email })
+    }).then(function(r){
+      if(r.ok){
+        btn.textContent = "you're in ✓";
+        btn.style.background = "#9cebc0";
+      } else {
+        btn.textContent = "try again?";
+        btn.style.background = "";
+      }
+    }).catch(function(){
+      btn.textContent = "try again?";
+      btn.style.background = "";
+    }).finally(function(){ btn.disabled = false; });
     return false;
   }
 </script>
