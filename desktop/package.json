@@ -1,0 +1,48 @@
+{
+  "name": "lowkeyhud",
+  "version": "0.1.0",
+  "description": "A lowkey heads-up display for your screen. Time, a daily roast, and a focus timer — quietly.",
+  "main": "main.js",
+  "author": "lowkeyhud",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "make-icon": "node scripts/make-icon.js",
+    "dist": "npm run make-icon && electron-builder",
+    "dist:mac": "npm run make-icon && electron-builder --mac",
+    "dist:win": "npm run make-icon && electron-builder --win",
+    "dist:linux": "npm run make-icon && electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.lowkeyhud.app",
+    "productName": "lowkeyhud",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Utility",
+      "icon": "assets/icon.png"
+    }
+  }
+}
