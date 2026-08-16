@@ -100,7 +100,7 @@ The one journey worth optimizing for launch is **A → C**: get a visitor to the
 | # | Step | Who | ~Time | Done when |
 |---|------|-----|-------|-----------|
 | 1 | **Wire the money loop** — paste `PRO_CHECKOUT_URL` (Lemon), `EMAIL_FORM_ID` (Formspree), deploy the Worker, paste `PRO_VALIDATE_URL` + `PRO_LOOKUP_URL` | you create → me pastes + ships | 15 min | "Get Pro" opens a real checkout on generator + roast; the email form actually submits |
-| 2 | **Real test purchase** — buy the $4 product (Lemon test mode or real card) | you | 10 min | Full Path C works end-to-end: pay → /success → key → PRO on → HD export with no watermark |
+| 2 | **Real test purchase** — first run `node scripts/smoke-pro-flow.mjs --checkout=<URL>` to prove the wiring, then buy the $4 product (Lemon test mode or real card) | you | 10 min | Full Path C works end-to-end: pay → /success → key → PRO on → HD export with no watermark |
 | 3 | **Export the 3 launch cards as images** | me | 15 min | 3 PNGs (or GIFs) on disk, ready to post |
 | 4 | **Seed the loop — launch day** — post the hero post + 3 cards (image + link), get friends to remix | you | 30 min | First shares; someone outside your circle remixes a card |
 | 5 | **Product Hunt launch** — draft is ready in LAUNCH-KIT.md; pick a slot, ship it, answer comments | you | 30–60 min | PH page live with maker comment + card link |
