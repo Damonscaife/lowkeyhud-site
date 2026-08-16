@@ -550,8 +550,9 @@
   /* ---------- pro unlock (watermark removal + 2x export) ---------- */
   // DEMO123 is a demo key. Client-side checks are a convenience, NOT real
   // security — for a paid product, validate keys server-side.
-  var PRO_KEYS = ["DEMO123"];
-  var PRO_CHECKOUT_URL = ""; // set to your Stripe Payment Link / Lemon Squeezy URL
+  var PRO_KEYS = ["DEMO123"]; // dev keys — only used while PRO_VALIDATE_URL is empty
+  var PRO_CHECKOUT_URL = "";  // Lemon Squeezy: https://[store].lemonsqueezy.com/checkout/buy/[VARIANT_ID]
+  var PRO_VALIDATE_URL = "";  // Cloudflare Worker: https://<worker>.workers.dev/validate
 
   function isPro(){
     try { return localStorage.getItem("lowkeyhud:pro") === "1"; } catch(e){ return false; }
@@ -1028,14 +1029,34 @@
   }
   $("btn-pro").addEventListener("click", function(){ $("pro-modal").hidden = false; });
   $("pro-close").addEventListener("click", function(){ $("pro-modal").hidden = true; });
+  function unlockPro(){
+    setPro(true); updateProUI(); $("pro-modal").hidden = true; $("pro-err").textContent = "";
+    toast("pro unlocked ✓ · 2x export, no watermark");
+  }
   $("pro-unlock").addEventListener("click", function(){
-    var key = $("pro-key").value.trim().toUpperCase();
-    if(PRO_KEYS.indexOf(key) !== -1){
-      setPro(true); updateProUI(); $("pro-modal").hidden = true; $("pro-err").textContent = "";
-      toast("pro unlocked ✓ · 2x export, no watermark");
-    } else {
-      $("pro-err").textContent = "that code isn't it. no cap.";
+    var key = $("pro-key").value.trim();
+    $("pro-err").textContent = "";
+    if(!key){ $("pro-err").textContent = "paste a code first."; return; }
+    if(!PRO_VALIDATE_URL){
+      // no license backend yet — dev keys only
+      if(PRO_KEYS.indexOf(key.toUpperCase()) !== -1){ unlockPro(); }
+      else { $("pro-err").textContent = "that code isn't it. no cap."; }
+      return;
     }
+    var btn = $("pro-unlock");
+    btn.disabled = true; btn.textContent = "checking…";
+    fetch(PRO_VALIDATE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ license_key: key })
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if(j && j.ok){ unlockPro(); }
+      else { $("pro-err").textContent = (j && j.message) ? j.message : "that code isn't it. no cap."; }
+    }).catch(function(){
+      $("pro-err").textContent = "couldn't verify that code — try again in a sec.";
+    }).finally(function(){
+      btn.disabled = false; btn.textContent = "Unlock";
+    });
   });
   if(PRO_CHECKOUT_URL){
     $("pro-buy").setAttribute("href", PRO_CHECKOUT_URL);
