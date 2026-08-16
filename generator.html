@@ -95,6 +95,15 @@
     transition:border-color .15s;
   }
   .field input:focus{border-color:var(--green)}
+  .pic-row{display:flex;gap:10px;align-items:center}
+  .pic-row input{flex:1;min-width:0}
+  .pic-thumb{width:46px;height:46px;border-radius:50%;flex-shrink:0;border:1px dashed var(--line-strong);background:var(--bg-2) center/cover no-repeat;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+  .pic-thumb i{width:8px;height:8px;border-radius:50%;background:var(--faint);opacity:.6}
+  .pic-thumb.on{border:1px solid var(--green)}
+  .pic-thumb.on i{display:none}
+  .pic-thumb.fail{border-color:var(--red)}
+  .pic-thumb.fail i{display:none}
+  .pic-thumb.fail::after{content:"!";font-family:var(--mono);font-size:.66rem;color:var(--red)}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
   .stat-edit{margin-bottom:20px}
@@ -244,7 +253,10 @@
 
       <div class="field">
         <label for="f-pic">Profile pic (URL)</label>
-        <input type="text" id="f-pic" inputmode="url" placeholder="https://… image or X/Twitter profile link (optional)" />
+        <div class="pic-row">
+          <input type="text" id="f-pic" inputmode="url" placeholder="https://… image or X/Twitter profile link (optional)" />
+          <div class="pic-thumb" id="pic-thumb" title="imported avatar preview"><i></i></div>
+        </div>
         <p class="hint" id="pic-status" style="margin-top:8px;margin-bottom:0">// optional · direct image URL or X/Twitter profile link — we crop it into the radar</p>
       </div>
 
@@ -448,7 +460,10 @@
     var radar = $("c-radar");
     var img = $("c-pic");
     var status = $("pic-status");
+    var thumb = $("pic-thumb");
     picOk = false;
+    thumb.className = "pic-thumb";
+    thumb.style.backgroundImage = "";
     if(!url){
       img.removeAttribute("src");
       radar.classList.remove("pic-mode");
@@ -460,6 +475,7 @@
     if(resolved === "instagram"){
       img.removeAttribute("src");
       radar.classList.remove("pic-mode");
+      thumb.classList.add("fail");
       status.textContent = "// Instagram blocks direct profile links — open the profile, right-click the avatar, “copy image address”, then paste that link here";
       status.style.color = "var(--red)";
       return;
@@ -471,6 +487,8 @@
     img.onload = function(){
       picOk = true;
       radar.classList.add("pic-mode");
+      thumb.className = "pic-thumb on";
+      thumb.style.backgroundImage = "url('" + img.src + "')";
       status.textContent = "// imported ✓ · it'll show in the export";
       status.style.color = "var(--green)";
     };
@@ -486,6 +504,7 @@
       picOk = false;
       img.removeAttribute("src");
       radar.classList.remove("pic-mode");
+      thumb.classList.add("fail");
       status.textContent = "// couldn't import that image — it may not be a direct link, or its host blocks cross-origin use";
       status.style.color = "var(--red)";
     };
