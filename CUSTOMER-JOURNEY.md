@@ -92,3 +92,20 @@ Someone reopens their `/success` link or lands with a key → sees it / copies i
 The site has a working acquisition loop (A + B) and a working retention hook (D) — the two things that matter most for a viral product. What it doesn't have is any way to turn that motion into money (C) or into an owned asset (E). Every path that ends in "customer" today ends in a wall with an empty string on it. The moment the checkout URL + Worker are wired, Paths A→C become a single continuous journey: *see card → want it clean → pay → unlock.* Until then, the loop spins and collects nothing.
 
 The one journey worth optimizing for launch is **A → C**: get a visitor to the generator, get them to download (and see the watermark), and convert the watermark-gripe into a $4 unlock. Everything else (D/E/F/G) should feed that single path.
+
+---
+
+## Launch-week checklist (ordered by ROI)
+
+| # | Step | Who | ~Time | Done when |
+|---|------|-----|-------|-----------|
+| 1 | **Wire the money loop** — paste `PRO_CHECKOUT_URL` (Lemon), `EMAIL_FORM_ID` (Formspree), deploy the Worker, paste `PRO_VALIDATE_URL` + `PRO_LOOKUP_URL` | you create → me pastes + ships | 15 min | "Get Pro" opens a real checkout on generator + roast; the email form actually submits |
+| 2 | **Real test purchase** — buy the $4 product (Lemon test mode or real card) | you | 10 min | Full Path C works end-to-end: pay → /success → key → PRO on → HD export with no watermark |
+| 3 | **Export the 3 launch cards as images** | me | 15 min | 3 PNGs (or GIFs) on disk, ready to post |
+| 4 | **Seed the loop — launch day** — post the hero post + 3 cards (image + link), get friends to remix | you | 30 min | First shares; someone outside your circle remixes a card |
+| 5 | **Product Hunt launch** — draft is ready in LAUNCH-KIT.md; pick a slot, ship it, answer comments | you | 30–60 min | PH page live with maker comment + card link |
+| 6 | **Email sequence** — welcome + daily roast emails wired to the Formspree list | you approve → me wires | 45 min | First subscriber gets the welcome email |
+| 7 | **Measure + iterate** — traffic, downloads, checkout clicks, upsell taps | both | ongoing | You know the one number that matters: conversions → $4 |
+| 8 | **Hygiene before/around launch** — sweep dead CSS, set git identity, decide the desktop app's fate | me / you | 30 min | Site is clean; no empty-feeling pages |
+
+Steps 1–2 are the entire difference between "ready to launch" and "live and charging" — nothing after them converts money without them. Step 4 is the biggest growth lever once 1–2 are closed: distribution beats features.
