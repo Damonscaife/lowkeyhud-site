@@ -1033,6 +1033,16 @@
     setPro(true); updateProUI(); $("pro-modal").hidden = true; $("pro-err").textContent = "";
     toast("pro unlocked ✓ · 2x export, no watermark");
   }
+  // post-checkout handoff: success.html stashes the key in sessionStorage and
+  // links here with #pro=1. Pre-fill the key and open the modal. The key never
+  // goes in the URL — otherwise copy-link would leak it.
+  function handleProArrival(){
+    var pending = null;
+    try { pending = sessionStorage.getItem("lowkeyhud:pending-key"); sessionStorage.removeItem("lowkeyhud:pending-key"); } catch(e){}
+    var params = new URLSearchParams(location.hash.replace(/^#/,""));
+    if(pending) $("pro-key").value = pending;
+    if(pending || params.get("pro") === "1") $("pro-modal").hidden = false;
+  }
   $("pro-unlock").addEventListener("click", function(){
     var key = $("pro-key").value.trim();
     $("pro-err").textContent = "";
@@ -1097,6 +1107,7 @@
   loadFromHash();
   loadPic();
   update();
+  handleProArrival();
 </script>
 </body>
 </html>
