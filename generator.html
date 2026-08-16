@@ -664,20 +664,38 @@
 
     // name + class
     var tx = cx + r + 40;
+    var maxX = W - P;   // inner right edge of the card
     ctx.textAlign = "left";
     mono(ctx, "700 58px", "#e8edf0");
-    ctx.fillText(d.name.toUpperCase(), tx, 285);
+    var nameTxt = d.name.toUpperCase();
+    if (ctx.measureText(nameTxt).width > maxX - tx) {
+      while (nameTxt.length > 1 && ctx.measureText(nameTxt + "…").width > maxX - tx) nameTxt = nameTxt.slice(0, -1);
+      nameTxt += "…";
+    }
+    ctx.fillText(nameTxt, tx, 285);
+    var clsLabel = MODES[d.mode].clsLabel + ": ";
     mono(ctx, "500 34px", "#86949c");
-    ctx.fillText(MODES[d.mode].clsLabel + ": ", tx, 350);
-    var clsW = ctx.measureText(MODES[d.mode].clsLabel + ": ").width;
+    ctx.fillText(clsLabel, tx, 350);
+    var clsW = ctx.measureText(clsLabel).width;
     mono(ctx, "600 34px", "#e6b96e");
     ctx.fillText(d.cls, tx + clsW, 350);
     var mid = ctx.measureText(d.cls).width;
-    mono(ctx, "500 34px", "#86949c");
-    ctx.fillText("  ·  STATUS: ", tx + clsW + mid, 350);
-    var stW = ctx.measureText("  ·  STATUS: ").width;
-    mono(ctx, "600 34px", "#e6b96e");
-    ctx.fillText(d.status, tx + clsW + mid + stW, 350);
+    var sep = "  ·  STATUS: ";
+    if (tx + clsW + mid + ctx.measureText(sep).width + ctx.measureText(d.status).width <= maxX) {
+      // fits on one line
+      mono(ctx, "500 34px", "#86949c");
+      ctx.fillText(sep, tx + clsW + mid, 350);
+      var stW = ctx.measureText(sep).width;
+      mono(ctx, "600 34px", "#e6b96e");
+      ctx.fillText(d.status, tx + clsW + mid + stW, 350);
+    } else {
+      // status wraps to its own line below so it's never clipped
+      var sep2 = "STATUS: ";
+      mono(ctx, "500 34px", "#86949c");
+      ctx.fillText(sep2, tx, 400);
+      mono(ctx, "600 34px", "#e6b96e");
+      ctx.fillText(d.status, tx + ctx.measureText(sep2).width, 400);
+    }
 
     // stats
     var sy = 470;
