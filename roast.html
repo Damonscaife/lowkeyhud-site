@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>lowkeyhud — the daily roast</title>
+<meta name="description" content="One HUD read on your day. Every day. No data, no signup, no cap." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0d0f'/><rect x='7' y='7' width='18' height='18' rx='3' fill='none' stroke='%2386e0ab' stroke-width='2'/><circle cx='16' cy='16' r='4' fill='%2386e0ab'/></svg>" />
+<style>
+  :root{
+    --bg:#0a0d0f;--bg-2:#0e1316;--panel:rgba(255,255,255,.02);
+    --line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.16);
+    --text:#e8edf0;--dim:#86949c;--faint:#55626a;
+    --green:#86e0ab;--green-dim:rgba(134,224,171,.14);--amber:#e6b96e;--red:#e8826f;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(1000px 500px at 50% -10%, rgba(230,185,110,.06), transparent 60%), var(--bg)}
+  .gridlines{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%)}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+
+  header{position:sticky;top:0;z-index:40;backdrop-filter:blur(12px);background:rgba(10,13,15,.72);border-bottom:1px solid var(--line)}
+  .top{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:600;letter-spacing:.06em}
+  .logo .mark{width:24px;height:24px;border:1.5px solid var(--green);border-radius:5px;display:grid;place-items:center;position:relative}
+  .logo .mark::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .back{font-family:var(--mono);font-size:.8rem;color:var(--dim);transition:color .2s}
+  .back:hover{color:var(--text)}
+
+  .hero{text-align:center;padding:48px 0 8px}
+  .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;color:var(--dim);text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:12px}
+  .kicker::before,.kicker::after{content:"";width:30px;height:1px;background:var(--amber)}
+  h1{font-size:clamp(2rem,6vw,3rem);letter-spacing:-.03em;font-weight:700;margin:14px 0 8px}
+  h1 .accent{color:var(--amber)}
+  .sub{color:var(--dim);max-width:44ch;margin:0 auto}
+  .meta-row{display:flex;justify-content:center;gap:24px;margin-top:18px;font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;color:var(--faint)}
+  .meta-row b{color:var(--green);font-weight:600}
+
+  .stage{display:flex;flex-direction:column;align-items:center;padding:28px 0 80px}
+
+  .hud-card{
+    position:relative;border:1px solid var(--line-strong);border-radius:16px;width:100%;max-width:560px;
+    background:linear-gradient(180deg, rgba(230,185,110,.05), rgba(14,19,22,.6) 40%, var(--bg-2));
+    padding:28px;font-family:var(--mono);
+    box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .hud-card::before,.hud-card::after{content:"";position:absolute;width:20px;height:20px}
+  .hud-card::before{top:-1px;left:-1px;border-top:2px solid var(--amber);border-left:2px solid var(--amber);border-top-left-radius:16px}
+  .hud-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--amber);border-right:2px solid var(--amber);border-bottom-right-radius:16px}
+  .hud-top{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;letter-spacing:.18em;color:var(--dim);padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .live{color:var(--green)}
+  .live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;animation:pulse 2s infinite}
+  .roast-line{font-size:1.32rem;line-height:1.45;color:var(--text);margin:26px 0 4px;min-height:3.9em;font-weight:600;letter-spacing:-.01em}
+  .roast-line .cursor{display:inline-block;width:9px;height:1.05em;background:var(--amber);margin-left:3px;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .stats{margin-top:20px;display:flex;flex-direction:column;gap:13px}
+  .stat .row{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.18em;color:var(--dim);margin-bottom:6px}
+  .stat .row b{color:var(--text);font-weight:600}
+  .bar{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg, rgba(230,185,110,.2), var(--amber));transition:width .6s ease}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .chip{font-size:.66rem;letter-spacing:.12em;color:var(--dim);border:1px solid var(--line-strong);border-radius:6px;padding:5px 10px}
+  .chip.on{color:var(--amber);border-color:rgba(230,185,110,.35)}
+  .hud-foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:.68rem;letter-spacing:.14em;color:var(--faint)}
+  .hud-foot b{color:var(--dim);font-weight:600}
+  .hud-foot .nocap{color:var(--red)}
+
+  .share{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;width:100%;max-width:560px;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.86rem;font-weight:600;letter-spacing:.04em;padding:12px 20px;border-radius:8px;border:1px solid var(--line-strong);background:transparent;color:var(--text);transition:all .2s;cursor:pointer}
+  .btn:hover{border-color:var(--green);color:var(--green)}
+  .btn.primary{background:var(--green);color:#07120b;border-color:var(--green)}
+  .btn.primary:hover{background:#9cebc0;color:#07120b}
+  .toast{font-family:var(--mono);font-size:.74rem;color:var(--green);letter-spacing:.04em;opacity:0;transition:opacity .25s;margin-top:14px}
+  .toast.show{opacity:1}
+  .btn.sm{padding:9px 14px;font-size:.78rem}
+  .pro-bar{display:flex;align-items:center;gap:14px;margin-top:14px;justify-content:center;width:100%;max-width:560px}
+  .pro-status{font-family:var(--mono);font-size:.72rem;color:var(--faint);letter-spacing:.05em}
+  .pro-modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+  .pro-modal[hidden]{display:none}
+  .pro-panel{position:relative;width:100%;max-width:400px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg-2);padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .pro-close{position:absolute;top:14px;right:14px;background:transparent;border:1px solid transparent;color:var(--faint);font-family:var(--mono);font-size:15px;width:26px;height:26px;border-radius:6px;cursor:pointer}
+  .pro-close:hover{color:var(--text);border-color:var(--line-strong)}
+  .pro-lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.26em;color:var(--green);text-transform:uppercase;margin-bottom:10px}
+  .pro-h{font-size:1.4rem;letter-spacing:-.02em;margin-bottom:8px}
+  .pro-desc{color:var(--dim);font-size:.9rem;margin-bottom:16px}
+  .pro-price{font-family:var(--mono);font-size:2rem;font-weight:700;margin-bottom:16px}
+  .pro-price span{font-size:.8rem;color:var(--dim);font-weight:400}
+  .pro-note{font-family:var(--mono);font-size:.68rem;color:var(--faint);margin-top:12px}
+  .pro-code{display:flex;gap:8px;margin-top:22px;border-top:1px solid var(--line);padding-top:18px}
+  .pro-code input{flex:1;font-family:var(--mono);font-size:.85rem;color:var(--text);background:var(--bg);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;outline:none}
+  .pro-code input:focus{border-color:var(--green)}
+  .pro-err{font-family:var(--mono);font-size:.72rem;color:var(--red);margin-top:10px;min-height:1em}
+  .past-note{font-family:var(--mono);font-size:.74rem;color:var(--faint);margin-top:16px;letter-spacing:.06em}
+  .past-note a{color:var(--green)}
+  footer{border-top:1px solid var(--line);padding:26px 0 44px;text-align:center}
+  footer .in{font-family:var(--mono);font-size:.74rem;color:var(--faint);letter-spacing:.06em}
+  footer .in b{color:var(--dim);font-weight:600}
+</style>
+</head>
+<body>
+<div class="gridlines"></div>
+
+<header>
+  <div class="wrap top">
+    <a class="logo" href="index.html"><span class="mark"></span>lowkeyhud</a>
+    <a class="back" href="generator.html">make your own HUD →</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">the daily roast</div>
+    <h1>One HUD read<br/>on your day. <span class="accent">Every day.</span></h1>
+    <p class="sub">No data. No signup. Just today's forecast, rendered as a HUD. Everyone gets the same one — that's the joke.</p>
+    <div class="meta-row">
+      <span>streak: <b id="streak">1</b> day</span>
+      <span>next roast in <b id="countdown">--:--:--</b></span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="hud-card" id="card">
+      <div class="hud-top">
+        <span>DAILY_ROAST // <span id="c-date">2026.08.16</span></span>
+        <span class="live"><i></i>LIVE</span>
+      </div>
+      <div class="roast-line"><span id="c-roast"></span><span class="cursor" id="c-cursor"></span></div>
+      <div class="stats" id="c-stats"></div>
+      <div class="chips" id="c-chips"></div>
+      <div class="hud-foot">
+        <span>HUD SAYS</span>
+        <span><b>lowkeyhud</b></span>
+        <span class="nocap">NO CAP</span>
+      </div>
+    </div>
+
+    <div class="share">
+      <button class="btn primary" id="btn-copy">Copy link</button>
+      <button class="btn" id="btn-download">Download PNG</button>
+      <button class="btn" id="btn-share" style="display:none">Share</button>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <div class="pro-bar">
+      <button class="btn sm" id="btn-pro">⚡ unlock 2× export + no watermark</button>
+      <span class="pro-status" id="pro-status">free · watermarked</span>
+    </div>
+
+    <div class="pro-modal" id="pro-modal" hidden>
+      <div class="pro-panel">
+        <button class="pro-close" id="pro-close" title="close">✕</button>
+        <div class="pro-lbl">GO PRO</div>
+        <h3 class="pro-h">Remove the watermark.</h3>
+        <p class="pro-desc">2× (HD) export · no watermark · support the thing. no cap.</p>
+        <div class="pro-price">$4 <span>once</span></div>
+        <a class="btn primary" id="pro-buy" href="#">Get Pro</a>
+        <p class="pro-note" id="pro-note"></p>
+        <div class="pro-code">
+          <input type="text" id="pro-key" placeholder="have a code? paste it" />
+          <button class="btn" id="pro-unlock">Unlock</button>
+        </div>
+        <p class="pro-err" id="pro-err"></p>
+      </div>
+    </div>
+
+    <div class="past-note" id="past-note" style="display:none">// viewing <span id="past-date"></span> · <a href="roast.html">back to today</a></div>
+  </div>
+</div>
+
+<footer>
+  <div class="in"><b>lowkeyhud</b> © <span id="yr"></span> — the daily roast. no data. no cap.</div>
+</footer>
+
+<script>
+  /* ---------- date helpers ---------- */
+  function pad(n){ return n < 10 ? "0"+n : ""+n; }
+  function keyOf(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function displayOf(d){ return d.getFullYear() + "." + pad(d.getMonth()+1) + "." + pad(d.getDate()); }
+  var today = new Date();
+
+  /* ---------- seeded rng ---------- */
+  function seedStr(s){ var h = 0; for(var i=0;i<s.length;i++){ h = (Math.imul(h,31) + s.charCodeAt(i)) >>> 0; } return h; }
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
+
+  /* ---------- content pools ---------- */
+  var HEADLINES = [
+    "today's forecast: {a} meetings. {b}% of them necessary. lowkey.",
+    "you opened the calendar {a} times. it's still {day}.",
+    "{a} snack breaks today. respect.",
+    "your screen time called. it's worried.",
+    "the {hour} meeting could've been an email. you already know.",
+    "achievement unlocked: felt the fear, did it anyway.",
+    "hydrate. this is the HUD talking. no cap.",
+    "you said '5 more minutes' {a} times today. no cap.",
+    "email inbox: {a} unread. it's a lifestyle now.",
+    "your to-do list grew {a} items while you read this.",
+    "productivity: {b}%. honesty: 100%.",
+    "you have {a} tabs open. all of them 'research'.",
+    "lowkey you should stand up. you've been sitting for {a} hours.",
+    "the grind called. you declined. king behavior.",
+    "meetings that should've been a dm: {a}.",
+    "water intake: {b}%. coffee intake: 200%.",
+    "you rearranged your desk {a} times instead of working. respect.",
+    "screen time up {b}%. the screen is winning.",
+    "reminder: you can do hard things. also you can nap.",
+    "today's mood: {mood}. today's output: {b}%.",
+    "you read the whole email. answered the last line. classic.",
+    "it's {day}. {b}% chance you check your phone in the next 3 minutes.",
+    "you called it 'multitasking'. it was {a} tabs.",
+    "level up requires one more 'quick chat'. good luck.",
+    "your 5-minute break has been going for {a} hours.",
+    "productivity has left the chat. lowkey.",
+    "the agenda has {a} items. all of them 'sync'.",
+    "you are {b}% more productive after the 3rd coffee. allegedly."
+  ];
+  var STAT_LABELS = ["AURA","FOCUS","CAFFEINE","PROCRASTINATION","REGRETS","MEETINGS SURVIVED","TABS OPEN","UNREAD EMAILS","HOPE","DELUSION","VIBES","SCREEN TIME"];
+  var CHIPS = ["3 TABS TOO MANY","DENIAL","SNACK ECONOMY","UNREAD EMAILS","MAIN CHARACTER","SLIGHTLY OFF GRID","CAFFEINE","AUDACITY","DO NOT DISTURB","OFFLINE (IN SPIRIT)","MEETING SURVIVOR","PROFESSIONAL PROCRASTINATOR","HYDRATED (ALLEGEDLY)","GOOD INTENTIONS","VIBES ONLY","NO CAP"];
+  var MOODS = ["chaotic","sleepy","delulu","locked in","feral","zen","unbothered","caffeinated"];
+  var DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+  var HOURS = ["9am","11am","1pm","3pm","4:30pm"];
+
+  function genRoast(key){
+    var rnd = mulberry32(seedStr(key));
+    function pick(arr){ return arr[Math.floor(rnd()*arr.length)]; }
+    function n(min,max){ return min + Math.floor(rnd()*(max-min+1)); }
+    function pickN(arr,count){ var a = arr.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(rnd()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a.slice(0,count); }
+
+    var headline = pick(HEADLINES)
+      .replace(/\{a\}/g, n(2,14))
+      .replace(/\{b\}/g, n(22,96))
+      .replace(/\{hour\}/g, pick(HOURS))
+      .replace(/\{day\}/g, pick(DAYS))
+      .replace(/\{mood\}/g, pick(MOODS));
+
+    var stats = pickN(STAT_LABELS, 3).map(function(l){ return { label: l, value: n(18,97) }; });
+    var chips = pickN(CHIPS, 3);
+    return { headline: headline, stats: stats, chips: chips };
+  }
+
+  /* ---------- which day ---------- */
+  function dayFromQuery(){
+    var p = new URLSearchParams(location.search);
+    var d = p.get("d");
+    if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){
+      var parsed = new Date(d + "T12:00:00");
+      if(!isNaN(parsed.getTime())) return parsed;
+    }
+    return today;
+  }
+  var day = dayFromQuery();
+  var key = keyOf(day);
+  var roast = genRoast(key);
+  var isToday = keyOf(day) === keyOf(today);
+
+  /* ---------- render DOM ---------- */
+  function $(id){ return document.getElementById(id); }
+  $("c-date").textContent = displayOf(day);
+  $("yr").textContent = today.getFullYear();
+
+  // typewriter
+  var roastEl = $("c-roast"), cursorEl = $("c-cursor");
+  (function type(){
+    var text = roast.headline, i = 0;
+    roastEl.textContent = "";
+    var t = setInterval(function(){
+      roastEl.textContent += text[i]; i++;
+      if(i >= text.length){ clearInterval(t); cursorEl.remove(); }
+    }, 22);
+  })();
+
+  // stats
+  var statsEl = $("c-stats");
+  roast.stats.forEach(function(s, idx){
+    var row = document.createElement("div");
+    row.className = "stat";
+    row.innerHTML = '<div class="row"><span>'+s.label+'</span><b>'+s.value+'/100</b></div>' +
+                    '<div class="bar"><i data-w="'+s.value+'"></i></div>';
+    statsEl.appendChild(row);
+    setTimeout(function(){ row.querySelector(".bar i").style.width = s.value + "%"; }, 250 + idx*120);
+  });
+
+  // chips
+  var chipsEl = $("c-chips");
+  roast.chips.forEach(function(c){
+    var s = document.createElement("span");
+    s.className = "chip on"; s.textContent = c;
+    chipsEl.appendChild(s);
+  });
+
+  // past-date note
+  if(!isToday){
+    $("past-note").style.display = "";
+    $("past-date").textContent = displayOf(day);
+  }
+
+  /* ---------- streak ---------- */
+  var SK = "lowkeyhud:streak";
+  function updateStreak(){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(SK) || "{}"); }catch(e){}
+    var tk = keyOf(today);
+    if(stored.last === tk) return stored.count || 1;
+    var yesterday = new Date(today.getTime() - 86400000);
+    var count = (stored.last === keyOf(yesterday)) ? (stored.count || 0) + 1 : 1;
+    try{ localStorage.setItem(SK, JSON.stringify({ last: tk, count: count })); }catch(e){}
+    return count;
+  }
+  $("streak").textContent = updateStreak();
+
+  /* ---------- countdown to next roast ---------- */
+  function updateCountdown(){
+    var now = new Date();
+    var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0,0,0);
+    var diff = Math.max(0, midnight - now);
+    var h = Math.floor(diff/3600000), m = Math.floor(diff%3600000/60000), s = Math.floor(diff%60000/1000);
+    $("countdown").textContent = pad(h)+":"+pad(m)+":"+pad(s);
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  /* ---------- pro unlock (watermark removal + 2x export) ---------- */
+  // DEMO123 is a demo key. Client-side checks are a convenience, NOT real
+  // security — for a paid product, validate keys server-side.
+  var PRO_KEYS = ["DEMO123"];
+  var PRO_CHECKOUT_URL = ""; // set to your Stripe Payment Link / Lemon Squeezy URL
+
+  function isPro(){
+    try { return localStorage.getItem("lowkeyhud:pro") === "1"; } catch(e){ return false; }
+  }
+  function setPro(v){
+    try { if(v) localStorage.setItem("lowkeyhud:pro", "1"); else localStorage.removeItem("lowkeyhud:pro"); } catch(e){}
+  }
+
+  /* ---------- canvas export ---------- */
+  function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function bracket(ctx,x,y,s,dx,dy){ ctx.beginPath(); ctx.moveTo(x+dx*s,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*s); ctx.stroke(); }
+  function mono(ctx,f,c){ ctx.font = f + " ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"; ctx.fillStyle = c; }
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+    var words = text.split(" "), lines = [], line = "";
+    for(var i=0;i<words.length;i++){
+      var t = line ? line+" "+words[i] : words[i];
+      if(ctx.measureText(t).width > maxWidth && line){ lines.push(line); line = words[i]; }
+      else line = t;
+    }
+    if(line) lines.push(line);
+    if(maxLines && lines.length > maxLines){ lines = lines.slice(0,maxLines); lines[maxLines-1] += "…"; }
+    return lines;
+  }
+
+  function drawExport(pro){
+    var W = 1080, H = 1350;
+    var scale = pro ? 2 : 1;
+    var cv = document.createElement("canvas");
+    cv.width = W * scale; cv.height = H * scale;
+    var ctx = cv.getContext("2d");
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "#0a0d0f"; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.lineWidth = 1;
+    for(var x = 54; x < W; x += 54){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(var y = 54; y < H; y += 54){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    var m = 48;
+    roundRect(ctx, m, m, W-m*2, H-m*2, 26);
+    ctx.fillStyle = "rgba(14,19,22,0.92)"; ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 2;
+    roundRect(ctx, m, m, W-m*2, H-m*2, 26); ctx.stroke();
+
+    ctx.strokeStyle = "#e6b96e"; ctx.lineWidth = 5;
+    bracket(ctx, m, m, 26, 1, 1); bracket(ctx, W-m, m, 26, -1, 1);
+    bracket(ctx, m, H-m, 26, 1, -1); bracket(ctx, W-m, H-m, 26, -1, -1);
+
+    var P = 92;
+
+    // header
+    ctx.textBaseline = "middle";
+    mono(ctx, "500 30px", "#86949c"); ctx.textAlign = "left";
+    ctx.fillText("DAILY_ROAST // " + displayOf(day), P, 118);
+    mono(ctx, "600 30px", "#86e0ab"); ctx.textAlign = "right";
+    ctx.fillText("LIVE", W-P, 118);
+    ctx.fillStyle = "#86e0ab";
+    ctx.beginPath(); ctx.arc(W-P-70, 118, 8, 0, Math.PI*2); ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(P, 156); ctx.lineTo(W-P, 156); ctx.stroke();
+
+    // headline (wrapped)
+    mono(ctx, "600 52px", "#e8edf0"); ctx.textAlign = "left";
+    var lines = wrapText(ctx, roast.headline, P, 0, W-P*2, 74, 5);
+    var hy = 250;
+    lines.forEach(function(l){
+      ctx.fillText(l, P, hy);
+      hy += 74;
+    });
+
+    // stats
+    var sy = Math.max(hy + 30, 520);
+    roast.stats.forEach(function(s, i){
+      var y = sy + i*104;
+      mono(ctx, "500 30px", "#86949c"); ctx.textAlign = "left";
+      ctx.fillText(s.label, P, y);
+      mono(ctx, "600 30px", "#e8edf0"); ctx.textAlign = "right";
+      ctx.fillText(s.value + "/100", W-P, y);
+      var by = y + 22, bh = 26;
+      roundRect(ctx, P, by, W-P*2, bh, 13);
+      ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.fill();
+      var fw = (W-P*2) * (s.value/100);
+      if(fw > 13){
+        var grad = ctx.createLinearGradient(P,0,P+fw,0);
+        grad.addColorStop(0, "rgba(230,185,110,0.25)"); grad.addColorStop(1, "#e6b96e");
+        ctx.fillStyle = grad;
+        roundRect(ctx, P, by, Math.max(fw,20), bh, 13); ctx.fill();
+      }
+    });
+
+    // chips
+    var ly = sy + 3*104 + 50;
+    mono(ctx, "600 26px", "#86949c"); ctx.textAlign = "left";
+    ctx.fillText("LOADOUT", P, ly);
+    ly += 44;
+    var cx2 = P, cy2 = ly;
+    var maxW = W - P*2;
+    roast.chips.forEach(function(chip){
+      mono(ctx, "600 26px", "#e6b96e");
+      var cw = ctx.measureText(chip).width + 44, chh = 52;
+      if(cx2 + cw > P + maxW){ cx2 = P; cy2 += chh + 18; }
+      roundRect(ctx, cx2, cy2, cw, chh, 12);
+      ctx.strokeStyle = "rgba(230,185,110,0.35)"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#e6b96e"; ctx.textAlign = "left";
+      ctx.fillText(chip, cx2 + 22, cy2 + chh/2 + 1);
+      cx2 += cw + 18;
+    });
+
+    // footer
+    var fy = H - m - 60;
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.beginPath(); ctx.moveTo(P, fy-36); ctx.lineTo(W-P, fy-36); ctx.stroke();
+    mono(ctx, "600 30px", "#86949c"); ctx.textAlign = "left";
+    ctx.fillText("HUD SAYS", P, fy);
+    ctx.textAlign = "center";
+    mono(ctx, "600 30px", "#55626a");
+    ctx.fillText("lowkeyhud", W/2, fy);
+    ctx.textAlign = "right";
+    mono(ctx, "600 30px", "#e8826f");
+    ctx.fillText("NO CAP", W-P, fy);
+
+    // watermark on free exports
+    if(!pro){
+      ctx.save();
+      ctx.translate(W/2, H/2);
+      ctx.rotate(-0.5);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for(var wy = -160; wy <= 160; wy += 160){
+        mono(ctx, "500 46px", "rgba(255,255,255,0.12)");
+        ctx.fillText("lowkeyhud", 0, wy);
+      }
+      ctx.restore();
+    }
+
+    return cv;
+  }
+
+  /* ---------- share actions ---------- */
+  var toastTimer;
+  function toast(msg){ var el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2200); }
+  function shareUrl(){ return location.origin + location.pathname + (isToday ? "" : "?d=" + key); }
+  function fallbackCopy(text){ var t = document.createElement("textarea"); t.value = text; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select(); try{ document.execCommand("copy"); }catch(e){} t.remove(); }
+
+  $("btn-copy").addEventListener("click", function(){
+    var url = shareUrl();
+    var done = function(){ toast("today's roast link copied · lowkey ✓"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done).catch(function(){ fallbackCopy(url); done(); }); }
+    else { fallbackCopy(url); done(); }
+  });
+
+  $("btn-download").addEventListener("click", function(){
+    var cv = drawExport(isPro());
+    cv.toBlob(function(blob){
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = (isPro() ? "lowkeyhud-roast-pro-" : "lowkeyhud-roast-") + key + ".png";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+      toast("roast exported · share it ✓");
+    }, "image/png");
+  });
+
+  function updateProUI(){
+    var on = isPro();
+    $("btn-pro").style.display = on ? "none" : "";
+    $("pro-status").textContent = on ? "PRO ✓ unlocked" : "free · watermarked";
+  }
+  $("btn-pro").addEventListener("click", function(){ $("pro-modal").hidden = false; });
+  $("pro-close").addEventListener("click", function(){ $("pro-modal").hidden = true; });
+  $("pro-unlock").addEventListener("click", function(){
+    var key = $("pro-key").value.trim().toUpperCase();
+    if(PRO_KEYS.indexOf(key) !== -1){
+      setPro(true); updateProUI(); $("pro-modal").hidden = true; $("pro-err").textContent = "";
+      toast("pro unlocked ✓ · 2x export, no watermark");
+    } else {
+      $("pro-err").textContent = "that code isn't it. no cap.";
+    }
+  });
+  if(PRO_CHECKOUT_URL){
+    $("pro-buy").setAttribute("href", PRO_CHECKOUT_URL);
+    $("pro-buy").setAttribute("target", "_blank");
+    $("pro-note").textContent = "";
+  } else {
+    $("pro-buy").style.display = "none";
+    $("pro-note").textContent = "checkout link not configured yet — enter a code if you've got one.";
+  }
+  updateProUI();
+
+  if(navigator.share){
+    var shareBtn = $("btn-share");
+    shareBtn.style.display = "";
+    shareBtn.addEventListener("click", function(){
+      drawExport(isPro()).toBlob(function(blob){
+        var file = new File([blob], "lowkeyhud-roast.png", {type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({ title:"lowkeyhud daily roast", text:"today's roast. no cap.", files:[file] }).catch(function(){});
+        } else {
+          navigator.share({ title:"lowkeyhud daily roast", text:"today's roast. no cap.", url: shareUrl() }).catch(function(){});
+        }
+      }, "image/png");
+    });
+  }
+</script>
+</body>
+</html>
