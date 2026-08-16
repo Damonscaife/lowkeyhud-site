@@ -145,6 +145,9 @@
   .id h3{font-size:1.05rem;letter-spacing:.04em}
   .id .tag{font-size:.72rem;color:var(--dim);letter-spacing:.16em;margin-top:2px}
   .id .tag b{color:var(--amber);font-weight:600}
+  .id .tag .t-sep{display:inline}
+  .id .tag.wrap .t-sep{display:none}
+  .id .tag.wrap .t-status{display:block}
   .stats{margin-top:22px;display:flex;flex-direction:column;gap:13px}
   .stat .row{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.18em;color:var(--dim);margin-bottom:6px}
   .stat .row b{color:var(--text);font-weight:600}
@@ -304,7 +307,7 @@
           <div class="radar" id="c-radar"><div class="sweep"></div><div class="blip"></div><img id="c-pic" class="avatar" alt="" referrerpolicy="no-referrer" /></div>
           <div class="id">
             <h3 id="c-name">YOU, PROBABLY</h3>
-            <div class="tag"><span id="c-cls-label">CLASS</span>: <b id="c-cls">CREATIVE</b> · STATUS: <b id="c-status">CHILL</b></div>
+            <div class="tag" id="c-tag-row"><span id="c-cls-label">CLASS</span>: <b id="c-cls">CREATIVE</b><span class="t-sep"> · </span><span class="t-status">STATUS: <b id="c-status">CHILL</b></span></div>
           </div>
         </div>
         <div class="stats">
@@ -487,6 +490,7 @@
     $("c-name").textContent = d.name.toUpperCase();
     $("c-cls").textContent = d.cls;
     $("c-status").textContent = d.status;
+    $("c-tag-row").classList.toggle("wrap", tagNeedsWrap(d));
     $("c-lvl").textContent = d.level;
     $("c-tag").textContent = d.tag;
     $("c-xp").textContent = d.level * 47;
@@ -503,6 +507,18 @@
       s.textContent = c;
       chipsEl.appendChild(s);
     });
+  }
+
+  var tagMeter = document.createElement("canvas").getContext("2d");
+  // Mirror the export's wrap decision exactly: drawExport() keeps the
+  // CLASS/STATUS row inline only if it fits the 556px budget at 34px mono
+  // (tx=432, inner right edge W-P=988). The DOM preview toggles the same rule
+  // so what you see in the editor is what the shared PNG/GIF will look like.
+  function tagNeedsWrap(d){
+    var label = MODES[d.mode].clsLabel + ": ";
+    mono(tagMeter, "500 34px", "#86949c");
+    return (432 + tagMeter.measureText(label).width + tagMeter.measureText(d.cls).width
+      + tagMeter.measureText("  ·  STATUS: ").width + tagMeter.measureText(d.status).width) > 988;
   }
 
   function syncHash(){
