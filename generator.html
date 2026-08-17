@@ -133,9 +133,11 @@
     transition:opacity .15s;
   }
   .hud-card::before,.hud-card::after{content:"";position:absolute;width:20px;height:20px}
-  .hud-card::before{top:-1px;left:-1px;border-top:2px solid var(--green);border-left:2px solid var(--green);border-top-left-radius:16px}
-  .hud-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);border-bottom-right-radius:16px}
-  .hud-top{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;letter-spacing:.18em;color:var(--dim);padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .hud-card::before{top:-1px;left:-1px;border-top:2px solid var(--tier, var(--green));border-left:2px solid var(--tier, var(--green));border-top-left-radius:16px}
+  .hud-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--tier, var(--green));border-right:2px solid var(--tier, var(--green));border-bottom-right-radius:16px}
+  .hud-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-size:.7rem;letter-spacing:.18em;color:var(--dim);padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .lvl-side{text-align:right}
+  .tier{font-size:.6rem;letter-spacing:.16em;padding:4px 10px;border:1px solid var(--green);border-radius:999px;color:var(--green);justify-self:center;white-space:nowrap;box-shadow:0 0 12px rgba(134,224,171,.18)}
   .online-dot{display:inline-flex;align-items:center;gap:7px}
   .online-dot i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
   .lvl{color:var(--amber)}
@@ -313,7 +315,8 @@
       <div class="hud-card" id="card">
         <div class="hud-top">
           <span class="online-dot"><i></i>ONLINE</span>
-          <span><span class="lvl">LVL <span id="c-lvl">9</span></span> · LOWKEY</span>
+          <span class="tier" id="c-tier">COMMON #000</span>
+          <span class="lvl-side"><span class="lvl">LVL <span id="c-lvl">9</span></span> · LOWKEY</span>
         </div>
         <div class="hud-body">
           <div class="radar" id="c-radar"><div class="sweep"></div><div class="blip"></div><img id="c-pic" class="avatar" alt="" referrerpolicy="no-referrer" /></div>
@@ -338,7 +341,7 @@
         </div>
         <div class="loadout" id="c-chips"></div>
         <div class="hud-foot">
-          <span>XP: <b id="c-xp">423</b></span>
+          <span>PWR: <b id="c-power">1,784</b></span>
           <span class="nocap" id="c-tag">NO CAP</span>
         </div>
       </div>
@@ -395,6 +398,25 @@
     { mode:"personal", name:"2AM THEORIST", cls:"PHILOSOPHER", status:"SLEEPY", level:5, tag:"ONE MORE VIDEO", s:[90,35,72], chips:"VIBES, DELULU, SNACK ECONOMY" },
     { mode:"personal", name:"LOWKEY LEGEND", cls:"MENACE", status:"UNBOTHERED", level:11, tag:"TOO CHILL", s:[94,40,66], chips:"NO CAP, OFF GRID, COLD EMAILS" }
   ];
+
+  /* ---------- rarity (deterministic from card data) ---------- */
+  var TIERS = [
+    { name: "COMMON",   color: "#86e0ab" },
+    { name: "RARE",     color: "#e6b96e" },
+    { name: "LEGENDARY", color: "#c9a2ff" }
+  ];
+  function rarityOf(d){
+    // FNV-1a hash of the card identity so the same card always rolls the same
+    // tier, drop number and power — shareable links never change.
+    var s = [d.mode, d.name, d.cls, d.status, d.level, d.stats.join(","), d.tag].join("|");
+    var h = 2166136261;
+    for(var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    var roll = h % 100;
+    var tier = roll < 60 ? 0 : (roll < 90 ? 1 : 2);   // 60% / 30% / 10%
+    var drop = (h >>> 4) % 1000;
+    var power = Math.round(((d.stats[0] + d.stats[1] + d.stats[2]) / 3) * (d.level + 6) * 1.6);
+    return { tier: tier, drop: drop, power: power };
+  }
 
   function applyPreset(p){
     mode = p.mode;
@@ -547,7 +569,13 @@
     $("c-tag-row").classList.toggle("wrap", tagNeedsWrap(d));
     $("c-lvl").textContent = d.level;
     $("c-tag").textContent = d.tag;
-    $("c-xp").textContent = d.level * 47;
+    var rar = rarityOf(d);
+    var tc = TIERS[rar.tier].color;
+    $("c-tier").textContent = TIERS[rar.tier].name + " #" + ("000" + rar.drop).slice(-3);
+    $("c-tier").style.color = tc;
+    $("c-tier").style.borderColor = tc;
+    $("c-power").textContent = rar.power.toLocaleString("en-US");
+    $("card").style.setProperty("--tier", tc);
     var labels = ["s1","s2","s3"];
     labels.forEach(function(id,i){
       $("c-"+id+"-val").textContent = d.stats[i];
@@ -674,11 +702,15 @@
     roundRect(ctx, m, m, W-m*2, H-m*2, 26);
     ctx.stroke();
 
-    // corner brackets (neon)
+    // rarity (deterministic): tier colours the frame + header pill
+    var rar = rarityOf(d);
+    var tc = TIERS[rar.tier].color;
+
+    // corner brackets (neon, tinted by rarity tier)
     ctx.save();
-    ctx.shadowColor = "rgba(134,224,171,0.7)";
+    ctx.shadowColor = tc;
     ctx.shadowBlur = 12;
-    ctx.strokeStyle = "#86e0ab";
+    ctx.strokeStyle = tc;
     ctx.lineWidth = 5;
     var cb = 26;
     bracket(ctx, m, m, cb, 1, 1);
@@ -706,6 +738,22 @@
     ctx.textAlign = "right";
     mono(ctx, "500 30px", "#86949c");
     ctx.fillText("· LOWKEY", W-P-lvlW-16, 118);
+
+    // rarity pill (centred in the header): tier + drop number
+    var pillTxt = TIERS[rar.tier].name + " #" + ("000" + rar.drop).slice(-3);
+    mono(ctx, "600 26px", tc);
+    var pillW = ctx.measureText(pillTxt).width + 44;
+    var pillX = W/2 - pillW/2, pillY = 118 - 20;
+    ctx.save();
+    ctx.shadowColor = tc;
+    ctx.shadowBlur = (t === undefined || rar.tier < 2) ? 14 : 14 + Math.sin(t * Math.PI * 2) * 9;
+    roundRect(ctx, pillX, pillY, pillW, 40, 20);
+    ctx.strokeStyle = tc; ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = "center";
+    mono(ctx, "600 26px", tc);
+    ctx.fillText(pillTxt, W/2, 119);
 
     // divider
     ctx.strokeStyle = "rgba(255,255,255,0.08)";
@@ -902,8 +950,12 @@
     ctx.textAlign = "left";
     ctx.fillText("lowkeyhud", P, fy);
     ctx.textAlign = "center";
-    mono(ctx, "600 30px", "#86e0ab");
-    ctx.fillText("XP " + (d.level*47), W/2, fy);
+    ctx.save();
+    ctx.shadowColor = tc;
+    ctx.shadowBlur = 10;
+    mono(ctx, "600 30px", tc);
+    ctx.fillText("PWR " + rar.power.toLocaleString("en-US"), W/2, fy);
+    ctx.restore();
     ctx.textAlign = "right";
     mono(ctx, "600 30px", "#e8826f");
     ctx.fillText(d.tag || "NO CAP", W-P, fy);
