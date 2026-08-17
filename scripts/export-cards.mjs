@@ -182,25 +182,30 @@ async function main() {
           if (g2 > 150 && r2 < 200 && b2 < 200) green++;
         }
         // radar circle centre (cx=242, cy=330, r=150): an avatar fills it with
-        // photo pixels; the radar leaves it dark. Sample a small patch there.
-        var cx = 242, cy = 330, lit = 0;
+        // photo pixels; the radar shows rings/glow. Sample a 20x20 patch there:
+        // avatarLit = bright-pixel count, dist = distinct colors (a photo has
+        // hundreds, the radar a few dozen).
+        var cx = 242, cy = 330, lit = 0, seen = {}, dist = 0;
         for (var yy = cy-10; yy < cy+10; yy++){
           for (var xx = cx-10; xx < cx+10; xx++){
             var o = (yy*cv.width + xx)*4;
             if (px[o] > 40 || px[o+1] > 40 || px[o+2] > 40) lit++;
+            var key = px[o] + ',' + px[o+1] + ',' + px[o+2];
+            if (!seen[key]) { seen[key] = 1; dist++; }
           }
         }
-        return { w: cv.width, h: cv.height, dark: dark, green: green, avatarLit: lit, dataUrl: cv.toDataURL('image/png') };
+        return { w: cv.width, h: cv.height, dark: dark, green: green, avatarLit: lit, dist: dist, dataUrl: cv.toDataURL('image/png') };
       })()`,
       returnByValue: true
     });
     const v = r.result && r.result.value;
     if (!v || !v.dataUrl || !v.dataUrl.startsWith('data:image/png')) throw new Error('no png for ' + card.name);
     if (v.w !== 1080 || v.h !== 1350 || v.dark < 5 || v.green < 5) throw new Error('canvas looks wrong for ' + card.name + ' ' + JSON.stringify({ w: v.w, h: v.h, dark: v.dark, green: v.green }));
-    // The avatar card must show a photo in the radar circle; non-avatar cards
-    // must show the dark radar centre instead.
-    if (card.pic && v.avatarLit < 200) throw new Error('avatar not visible in export for ' + card.name + ' avatarLit=' + v.avatarLit);
-    if (!card.pic && v.avatarLit > 50) throw new Error('unexpected avatar pixels for ' + card.name + ' avatarLit=' + v.avatarLit);
+    // The avatar card must show a photo in the radar circle (photo: lit~400 /
+    // ~380 distinct colors; radar-with-glow: lit~222 / ~134). Non-avatar cards
+    // must show the radar (low distinct-color count despite the neon glow).
+    if (card.pic && (v.avatarLit < 300 || v.dist < 250)) throw new Error('avatar not visible in export for ' + card.name + ' avatarLit=' + v.avatarLit + ' dist=' + v.dist);
+    if (!card.pic && v.dist > 250) throw new Error('unexpected photo colors for ' + card.name + ' dist=' + v.dist);
     if (card.pic) console.log('  avatar visible in export (avatarLit=' + v.avatarLit + '/400)');
     const png = Buffer.from(v.dataUrl.split(',')[1], 'base64');
     const out = path.join(OUT_DIR, card.file + '.png');

@@ -141,7 +141,7 @@
   .lvl{color:var(--amber)}
   .hud-body{display:grid;grid-template-columns:auto 1fr;gap:22px;margin-top:20px;align-items:center}
   @media(max-width:440px){.hud-body{grid-template-columns:1fr}}
-  .radar{width:118px;height:118px;border-radius:50%;position:relative;border:1px solid rgba(134,224,171,.3);background:radial-gradient(circle, rgba(134,224,171,.06) 0 40%, transparent 70%)}
+  .radar{width:118px;height:118px;border-radius:50%;position:relative;border:1px solid rgba(134,224,171,.3);background:radial-gradient(circle, rgba(134,224,171,.06) 0 40%, transparent 70%);box-shadow:0 0 28px rgba(134,224,171,.10), inset 0 0 20px rgba(134,224,171,.05)}
   .radar::before{content:"";position:absolute;inset:22px;border-radius:50%;border:1px solid rgba(134,224,171,.22)}
   .radar::after{content:"";position:absolute;inset:44px;border-radius:50%;border:1px solid rgba(134,224,171,.18)}
   .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, rgba(134,224,171,.5), transparent 70deg);animation:spin 4.5s linear infinite}
@@ -151,7 +151,7 @@
   .radar.pic-mode .avatar{display:block}
   .radar.pic-mode .sweep,.radar.pic-mode .blip{display:none}
   .radar.pic-mode::before,.radar.pic-mode::after{display:none}
-  .id h3{font-size:1.05rem;letter-spacing:.04em}
+  .id h3{font-size:1.05rem;letter-spacing:.04em;text-shadow:0 0 18px rgba(134,224,171,.35)}
   .id .tag{font-size:.72rem;color:var(--dim);letter-spacing:.16em;margin-top:2px}
   .id .tag b{color:var(--amber);font-weight:600}
   .id .tag .t-sep{display:inline}
@@ -161,7 +161,7 @@
   .stat .row{display:flex;justify-content:space-between;font-size:.68rem;letter-spacing:.18em;color:var(--dim);margin-bottom:6px}
   .stat .row b{color:var(--text);font-weight:600}
   .bar{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
-  .bar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg, var(--green-dim), var(--green));transition:width .35s ease}
+  .bar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg, var(--green-dim), var(--green));box-shadow:0 0 8px rgba(134,224,171,.45);transition:width .35s ease}
   .loadout{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
   .chip{font-size:.66rem;letter-spacing:.12em;color:var(--dim);border:1px solid var(--line-strong);border-radius:6px;padding:5px 10px}
   .chip.on{color:var(--green);border-color:rgba(134,224,171,.35)}
@@ -674,7 +674,10 @@
     roundRect(ctx, m, m, W-m*2, H-m*2, 26);
     ctx.stroke();
 
-    // corner brackets
+    // corner brackets (neon)
+    ctx.save();
+    ctx.shadowColor = "rgba(134,224,171,0.7)";
+    ctx.shadowBlur = 12;
     ctx.strokeStyle = "#86e0ab";
     ctx.lineWidth = 5;
     var cb = 26;
@@ -682,12 +685,17 @@
     bracket(ctx, W-m, m, cb, -1, 1);
     bracket(ctx, m, H-m, cb, 1, -1);
     bracket(ctx, W-m, H-m, cb, -1, -1);
+    ctx.restore();
 
     var P = 92; // inner padding
 
-    // header
+    // header (online dot with a neon pulse in the GIF)
+    ctx.save();
+    ctx.shadowColor = "#86e0ab";
+    ctx.shadowBlur = 20;
     ctx.fillStyle = "#86e0ab";
     ctx.beginPath(); ctx.arc(P+8, 118, 9, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
     mono(ctx, "500 30px", "#86949c");
     ctx.textAlign = "left"; ctx.textBaseline = "middle";
     ctx.fillText("ONLINE", P+28, 118);
@@ -712,25 +720,62 @@
       ctx.clip();
       ctx.drawImage($("c-pic"), cx - r, cy - r, r*2, r*2);
       ctx.restore();
-      ctx.strokeStyle = "rgba(134,224,171,0.5)";
+      ctx.save();
+      ctx.shadowColor = "rgba(134,224,171,0.7)";
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = "rgba(134,224,171,0.55)";
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
     } else {
-      ctx.strokeStyle = "rgba(134,224,171,0.30)";
+      // rings with a soft neon glow
+      ctx.save();
+      ctx.shadowColor = "rgba(134,224,171,0.8)";
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = "rgba(134,224,171,0.40)";
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-      ctx.strokeStyle = "rgba(134,224,171,0.20)";
+      ctx.strokeStyle = "rgba(134,224,171,0.24)";
       ctx.beginPath(); ctx.arc(cx, cy, r*0.66, 0, Math.PI*2); ctx.stroke();
       ctx.beginPath(); ctx.arc(cx, cy, r*0.33, 0, Math.PI*2); ctx.stroke();
-      // sweep
+      ctx.restore();
+      // sweep cone: trailing wedge + glowing leading line (sweeps in the GIF)
       var ang = t === undefined ? -0.6 : t * Math.PI * 2;
-      ctx.strokeStyle = "rgba(134,224,171,0.85)";
+      var trail = 0.55;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, ang - trail, ang, false);
+      ctx.closePath();
+      var wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      wg.addColorStop(0, "rgba(134,224,171,0.16)");
+      wg.addColorStop(1, "rgba(134,224,171,0.02)");
+      ctx.fillStyle = wg;
+      ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.shadowColor = "rgba(134,224,171,0.9)";
+      ctx.shadowBlur = 16;
+      ctx.strokeStyle = "rgba(134,224,171,0.9)";
       ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ang)*r, cy + Math.sin(ang)*r); ctx.stroke();
-      // blip
+      ctx.restore();
+      // blip with a glow (pulses in the GIF)
+      var bR = t === undefined ? 7 : 6 + Math.sin(t * Math.PI * 2) * 2.5;
+      ctx.save();
+      ctx.shadowColor = "#86e0ab";
+      ctx.shadowBlur = 18;
       ctx.fillStyle = "#86e0ab";
-      ctx.beginPath(); ctx.arc(cx + r*0.55, cy - r*0.35, 7, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + r*0.55, cy - r*0.35, bR, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
     }
+
+    // ambient green bloom behind the radar/name zone
+    var bloom = ctx.createRadialGradient(cx, cy, 0, cx, cy, 500);
+    bloom.addColorStop(0, "rgba(134,224,171,0.07)");
+    bloom.addColorStop(1, "rgba(134,224,171,0)");
+    ctx.fillStyle = bloom;
+    ctx.fillRect(cx - 500, cy - 500, 1000, 1000);
 
     // name + class
     var tx = cx + r + 40;
@@ -742,13 +787,21 @@
       while (nameTxt.length > 1 && ctx.measureText(nameTxt + "…").width > maxX - tx) nameTxt = nameTxt.slice(0, -1);
       nameTxt += "…";
     }
+    ctx.save();
+    ctx.shadowColor = "rgba(134,224,171,0.45)";
+    ctx.shadowBlur = 20;
     ctx.fillText(nameTxt, tx, 285);
+    ctx.restore();
     var clsLabel = MODES[d.mode].clsLabel + ": ";
     mono(ctx, "500 34px", "#86949c");
     ctx.fillText(clsLabel, tx, 350);
     var clsW = ctx.measureText(clsLabel).width;
     mono(ctx, "600 34px", "#e6b96e");
+    ctx.save();
+    ctx.shadowColor = "rgba(230,185,110,0.4)";
+    ctx.shadowBlur = 10;
     ctx.fillText(d.cls, tx + clsW, 350);
+    ctx.restore();
     var mid = ctx.measureText(d.cls).width;
     var sep = "  ·  STATUS: ";
     if (tx + clsW + mid + ctx.measureText(sep).width + ctx.measureText(d.status).width <= maxX) {
@@ -757,14 +810,22 @@
       ctx.fillText(sep, tx + clsW + mid, 350);
       var stW = ctx.measureText(sep).width;
       mono(ctx, "600 34px", "#e6b96e");
+      ctx.save();
+      ctx.shadowColor = "rgba(230,185,110,0.4)";
+      ctx.shadowBlur = 10;
       ctx.fillText(d.status, tx + clsW + mid + stW, 350);
+      ctx.restore();
     } else {
       // status wraps to its own line below so it's never clipped
       var sep2 = "STATUS: ";
       mono(ctx, "500 34px", "#86949c");
       ctx.fillText(sep2, tx, 400);
       mono(ctx, "600 34px", "#e6b96e");
+      ctx.save();
+      ctx.shadowColor = "rgba(230,185,110,0.4)";
+      ctx.shadowBlur = 10;
       ctx.fillText(d.status, tx + ctx.measureText(sep2).width, 400);
+      ctx.restore();
     }
 
     // stats
@@ -793,8 +854,12 @@
           grad.addColorStop(1, "#86e0ab");
           ctx.fillStyle = grad;
         }
+        ctx.save();
+        ctx.shadowColor = "#86e0ab";
+        ctx.shadowBlur = 16;
         roundRect(ctx, bx, by, Math.max(fw, 20), bh, 13);
         ctx.fill();
+        ctx.restore();
       }
     });
 
@@ -812,12 +877,20 @@
       var cw = tw + 44, chh = 52;
       if(cx2 + cw > P + maxW){ cx2 = P; cy2 += chh + 18; }
       roundRect(ctx, cx2, cy2, cw, chh, 12);
-      ctx.strokeStyle = "rgba(134,224,171,0.35)";
+      ctx.save();
+      ctx.shadowColor = "rgba(134,224,171,0.5)";
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = "rgba(134,224,171,0.4)";
       ctx.lineWidth = 2;
       ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.shadowColor = "rgba(134,224,171,0.5)";
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#86e0ab";
       ctx.textAlign = "left";
       ctx.fillText(chip, cx2 + 22, cy2 + chh/2 + 1);
+      ctx.restore();
       cx2 += cw + 18;
     });
 
@@ -834,6 +907,13 @@
     ctx.textAlign = "right";
     mono(ctx, "600 30px", "#e8826f");
     ctx.fillText(d.tag || "NO CAP", W-P, fy);
+
+    // vignette for depth
+    var vg = ctx.createRadialGradient(W/2, H/2, H*0.35, W/2, H/2, H*0.78);
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, "rgba(0,0,0,0.42)");
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
 
     // watermark on free exports
     if(wm === undefined ? !pro : wm){
