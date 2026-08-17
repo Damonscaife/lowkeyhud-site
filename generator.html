@@ -146,7 +146,7 @@
   .radar{width:118px;height:118px;border-radius:50%;position:relative;border:1px solid rgba(134,224,171,.3);background:radial-gradient(circle, rgba(134,224,171,.06) 0 40%, transparent 70%);box-shadow:0 0 28px rgba(134,224,171,.10), inset 0 0 20px rgba(134,224,171,.05)}
   .radar::before{content:"";position:absolute;inset:22px;border-radius:50%;border:1px solid rgba(134,224,171,.22)}
   .radar::after{content:"";position:absolute;inset:44px;border-radius:50%;border:1px solid rgba(134,224,171,.18)}
-  .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, rgba(134,224,171,.5), transparent 70deg);animation:spin 4.5s linear infinite}
+  .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -70deg, rgba(134,224,171,0) 0deg, rgba(134,224,171,.5) 70deg);animation:spin 4.5s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .blip{position:absolute;width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);top:30%;left:62%}
   .radar .avatar{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;display:none;background:var(--bg-2)}
@@ -793,7 +793,7 @@
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, ang, ang + trail, false);
+      ctx.arc(cx, cy, r, ang, ang - trail, true);
       ctx.closePath();
       var wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       wg.addColorStop(0, "rgba(134,224,171,0.16)");
