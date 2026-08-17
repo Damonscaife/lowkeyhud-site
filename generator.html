@@ -793,7 +793,7 @@
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, ang - trail, ang, true);
+      ctx.arc(cx, cy, r, ang, ang + trail, false);
       ctx.closePath();
       var wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       wg.addColorStop(0, "rgba(134,224,171,0.16)");
